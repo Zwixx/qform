@@ -44,7 +44,6 @@ package org.glasser.qform;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -55,7 +54,6 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Properties;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.StringTokenizer;
 import javax.sql.*;
 import javax.swing.*;
@@ -69,8 +67,6 @@ import org.glasser.util.Formatter;
 import org.glasser.util.Util;
 import org.glasser.util.ExtensionClassLoader;
 import org.glasser.util.comparators.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
 
 
 

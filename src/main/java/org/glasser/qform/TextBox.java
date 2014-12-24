@@ -39,405 +39,404 @@
  */
 package org.glasser.qform;
 
-import java.util.*;
-import javax.swing.*;
-import java.sql.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import java.awt.*;
-import org.glasser.swing.*;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.sql.Types;
+import java.util.Set;
+
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import org.glasser.sql.DBUtil;
+import org.glasser.swing.GUIHelper;
+import org.glasser.swing.ThinBevelBorder;
 
 public class TextBox extends JTextArea {
 
-    private static boolean debug = System.getProperty("TextBox.debug") != null;
+	private static boolean debug = System.getProperty("TextBox.debug") != null;
 
-    private Set editableTypes = null;
+	private Set<Integer> editableTypes = null;
 
-    String columnName;
-    Integer dataType;
-    String typeName;
-    int length;
-    boolean nullable;
-    boolean isNull = false;
-    int ordinal;
-    boolean constructorDone = false;
-    boolean managingFocus = false;
+	String columnName;
+	Integer dataType;
+	String typeName;
+	int length;
+	boolean nullable;
+	boolean isNull = false;
+	int ordinal;
+	boolean constructorDone = false;
+	boolean managingFocus = false;
 
-    boolean isPKComponent = false;
+	boolean isPKComponent = false;
 
-    boolean dirty = false;
+	boolean dirty = false;
 
-    JLabel label = null;
+	JLabel label = null;
 
-    protected String dbEncoding = null;
+	protected String dbEncoding = null;
 
-    protected final static String APP_ENCODING = System.getProperty("file.encoding");
+	protected final static String APP_ENCODING = System.getProperty("file.encoding");
 
-    final Border redBorder = new LineBorder(Color.red);
+	final Border redBorder = new LineBorder(Color.red);
 
+	class RequiredFieldBorder extends CompoundBorder {
+		RequiredFieldBorder(Border innerBorder) {
+			super(redBorder, innerBorder);
+		}
+	};
 
-    class RequiredFieldBorder extends CompoundBorder {
-        RequiredFieldBorder(Border innerBorder) {
-            super(redBorder, innerBorder);
-        }
-    };
+	static java.awt.Color DISABLED = new java.awt.Color(0xE1E1E1);
+	static java.awt.Color WHITE = java.awt.Color.white;
 
+	private String decode(String s) {
+		try {
+			if (dbEncoding == null)
+				return s;
+			String decoded = new String(s.getBytes(dbEncoding), APP_ENCODING);
+			if (debug)
+				System.out.println("encoded: " + s + "\ndecoded: " + decoded);
+			return decoded;
+		} catch (java.io.UnsupportedEncodingException ex) {
+			ex.printStackTrace();
+			return s;
+		}
+	}
 
-    
-    
+	private String encode(String s) {
+		try {
+			if (dbEncoding == null)
+				return s;
+			String encoded = new String(s.getBytes(APP_ENCODING), dbEncoding);
+			if (debug)
+				System.out.println("decoded: " + s + "\nencoded: " + encoded);
+			return encoded;
 
+		} catch (java.io.UnsupportedEncodingException ex) {
+			ex.printStackTrace();
+			return s;
+		}
+	}
 
-    static java.awt.Color DISABLED = new java.awt.Color(0xE1E1E1);
-    static java.awt.Color WHITE = java.awt.Color.white;
+	TextBox(String ColumnName, int DataType, String TypeName, int Length, boolean Nullable, int Ordinal, JLabel lab) {
+		super();
+		setText("");
+		columnName = ColumnName;
+		dataType = new Integer(DataType);
 
+		typeName = TypeName;
+		length = Length;
+		nullable = Nullable;
+		ordinal = Ordinal;
+		label = lab;
+		String toolTip = columnName + ", type=" + dataType + " (" + typeName + "), Length=" + length + ", nullable="
+				+ nullable;
+		label.setToolTipText(toolTip);
 
-    private String decode(String s) {
-        try {
-            if(dbEncoding == null) return s;
-            String decoded = new String( s.getBytes(dbEncoding), APP_ENCODING);
-            if(debug) System.out.println("encoded: " + s + "\ndecoded: " + decoded);
-            return decoded;
-        }
-        catch(java.io.UnsupportedEncodingException ex) {
-            ex.printStackTrace();
-            return s;
-        }
-    }
+		setBorder(normalBorder());
 
-    private String encode(String s) {
-        try {
-            if(dbEncoding == null) return s;
-            String encoded = new String( s.getBytes(APP_ENCODING), dbEncoding);
-            if(debug) System.out.println("decoded: " + s + "\nencoded: " + encoded);
-            return encoded;
+		setEditable(false);
+		setLineWrap(true);
+		setWrapStyleWord(true);
+		this.getDocument().addDocumentListener(new DocumentListener() {
+			public void insertUpdate(DocumentEvent e) {
+				dirty = true;
+			}
 
-        }
-        catch(java.io.UnsupportedEncodingException ex) {
-            ex.printStackTrace();
-            return s;
-        }
-    }
+			public void removeUpdate(DocumentEvent e) {
+				dirty = true;
+			}
 
+			public void changedUpdate(DocumentEvent e) {
+				dirty = true;
+			}
+		});
 
-    
-    TextBox(String ColumnName, int DataType, String TypeName, int Length, boolean Nullable, int Ordinal, JLabel lab) {
-        super();
-        setText("");
-        columnName = ColumnName;
-        dataType = new Integer(DataType);
-
-        typeName = TypeName;
-        length = Length;
-        nullable = Nullable;
-        ordinal = Ordinal;
-        label = lab;
-        String toolTip = columnName + ", type=" + dataType+ " (" + typeName
-                         + "), Length=" + length + ", nullable=" + nullable;
-        label.setToolTipText(toolTip);
-
-        setBorder(normalBorder());
-
-        setEditable(false);
-        setLineWrap(true);
-        setWrapStyleWord(true);
-        this.getDocument().addDocumentListener(new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) {
-                    dirty = true;
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    dirty = true;
-                }
-                public void changedUpdate(DocumentEvent e) {
-                    dirty = true;
-                }
-            });
-
-        // in Java versions 1.4 and later, this will cause the tab key to
-        // shift focus away from a JTextArea.
+		// in Java versions 1.4 and later, this will cause the tab key to
+		// shift focus away from a JTextArea.
 		GUIHelper.setTabTraversal(this);
 
-        dbEncoding = System.getProperty("qform.db.encode." + typeName);
+		dbEncoding = System.getProperty("qform.db.encode." + typeName);
 
-        constructorDone = true;
+		constructorDone = true;
 
+	}
 
-        
-    }
+	public boolean isDirty() {
+		return dirty;
+	}
 
-    public boolean isDirty() {
-        return dirty;
-    }
+	public void setDirty(boolean b) {
+		dirty = b;
+	}
 
+	public void setRequiredFieldBorder(boolean b) {
+		if (b && nullable == false) {
+			setBorder(new RequiredFieldBorder(normalBorder()));
+		} else {
+			setBorder(normalBorder());
+		}
+	}
 
-    public void setDirty(boolean b) {
-        dirty = b;
-    }
+	public void setLabel(JLabel l) {
+		label = l;
+	}
 
-    public void setRequiredFieldBorder(boolean b) {
-        if(b && nullable == false) {
-            setBorder(new RequiredFieldBorder( normalBorder()));
-        }
-        else {
-            setBorder(normalBorder());
-        }
-    }
+	public JLabel getLabel() {
+		return label;
+	}
 
-    public void setLabel(JLabel l) {
-        label = l;
-    }
+	public String getColumnName() {
+		if (columnName == null)
+			return "";
+		else
+			return columnName;
+	}
 
-    public JLabel getLabel() {
-        return label;
-    }
+	public Integer getDataType() {
+		return dataType;
+	}
 
-    public String getColumnName() {
-        if(columnName == null) return "";
-        else return columnName;
-    }
+	public int getLength() {
+		return length;
+	}
 
-    public Integer getDataType() {
-        return dataType;
-    }
+	public boolean isNullable() {
+		return nullable;
+	}
 
-    public int getLength() {
-        return length;
-    }
+	public int getOrdinal() {
+		return ordinal;
+	}
 
-    public boolean isNullable() {
-        return nullable;
-    }
+	public boolean isTypeDisplayable() {
+		return (editableTypes != null && editableTypes.contains(dataType))
+				|| DBUtil.isDisplayableType(dataType.intValue());
+	}
 
-    public int getOrdinal() {
-        return ordinal;
-    }
+	public boolean isTypeNumeric() {
+		return DBUtil.isNumericType(dataType.intValue());
+	}
 
-    public boolean isTypeDisplayable() {
-        return (editableTypes != null && editableTypes.contains(dataType))
-            || DBUtil.isDisplayableType(dataType.intValue());
-    }
+	public void setEditable(boolean b) {
+		if (constructorDone == false) {
+			super.setEditable(b);
+			return;
+		}
+		if (isTypeDisplayable()) {
+			super.setEditable(b);
+			setColor(b);
+		} else {
+			super.setEditable(false);
+			setColor(false);
 
-    public boolean isTypeNumeric() {
-        return DBUtil.isNumericType(dataType.intValue());
-    }
+		}
 
-    public void setEditable(boolean b) {
-        if(constructorDone == false) {
-            super.setEditable(b);
-            return;
-        }
-        if(isTypeDisplayable()) {
-            super.setEditable(b);
-            setColor(b);
-        }
-        else {
-            super.setEditable(false);
-            setColor(false);
-        
-        }
-    
-    }
+	}
 
-    public void setPkComponent(boolean isPKComponent) {
-        this.isPKComponent = isPKComponent;
-        if(isPKComponent) {
-            if(label != null) {
-                label.setForeground(java.awt.Color.red);
-                String text = label.getText();
-                if(text != null) label.setText("* " + text);
-            }
-        }
-    }
+	public void setPkComponent(boolean isPKComponent) {
+		this.isPKComponent = isPKComponent;
+		if (isPKComponent) {
+			if (label != null) {
+				label.setForeground(java.awt.Color.red);
+				String text = label.getText();
+				if (text != null)
+					label.setText("* " + text);
+			}
+		}
+	}
 
-    public boolean isPkComponent() {
-        return isPKComponent;
-    }
+	public boolean isPkComponent() {
+		return isPKComponent;
+	}
 
-    private void setColor(boolean b) {
-        if(b) setBackground(WHITE);
-        else setBackground(DISABLED);
-    }
+	private void setColor(boolean b) {
+		if (b)
+			setBackground(WHITE);
+		else
+			setBackground(DISABLED);
+	}
 
-    Border backupBorder = new ThinBevelBorder(ThinBevelBorder.LOWERED);
+	Border backupBorder = new ThinBevelBorder(ThinBevelBorder.LOWERED);
 
-    private Border normalBorder() {
-        Border b = (Border) UIManager.getBorder("TextField.border");
-        if(b == null) {
-            return backupBorder;
-        }
-        else {
-            return b;
-        }
-    }
+	private Border normalBorder() {
+		Border b = UIManager.getBorder("TextField.border");
+		if (b == null) {
+			return backupBorder;
+		} else {
+			return b;
+		}
+	}
 
+	public void setValue(Object s) {
 
+		// if the value to be displayed is null, we'll turn the label
+		// gray to tell the user it's null rather than an empty string
+		// or a string of blanks.
+		if (s == null) {
+			isNull = true;
+			if (label != null)
+				label.setEnabled(false);
+		} else {
+			isNull = false;
+			label.setEnabled(true);
 
-    public void setValue(Object s) {
+		}
 
+		// if the data type is displayable, display it.
+		if (isTypeDisplayable()) {
+			if (s != null) {
+				// s = s.trim();
+				super.setText(decode(s.toString()));
+			} else {
+				super.setText(null);
+			}
+		} else {
+			if (s == null) {
+				super.setText(null);
+			} else {
+				super.setText("<" + typeName + " value >");
+			}
+		}
 
+		dirty = false;
+	}
 
-        // if the value to be displayed is null, we'll turn the label
-        // gray to tell the user it's null rather than an empty string
-        // or a string of blanks.
-        if(s == null) {
-            isNull = true;
-            if(label != null) label.setEnabled(false);
-        }
-        else {
-            isNull = false;
-            label.setEnabled(true);
-            
-        }
+	public void clear() {
+		super.setText(null);
+		label.setEnabled(true);
+	}
 
-        // if the data type is displayable, display it.
-        if(isTypeDisplayable()) {
-            if(s != null) {
-                //s = s.trim();
-                super.setText(decode(s.toString()));
-            }
-            else {
-                super.setText(null);
-            }
-        }
-        else {
-            if(s == null) {
-                super.setText(null);
-            }
-            else {
-                super.setText("<" + typeName + " value >");
-            }
-        }
+	public static String escapeQuotes(String s) {
+		if (s == null)
+			return s;
+		if (s.indexOf('\'') < 0)
+			return s;
+		StringBuffer buffer = new StringBuffer(s.length() + 10);
+		char[] chars = s.toCharArray();
+		for (int j = 0; j < chars.length; j++) {
+			if (chars[j] == '\'')
+				buffer.append('\'');
+			buffer.append(chars[j]);
+		}
+		return buffer.toString();
+	}
 
-        dirty = false;
-    }
+	public String getValueClause(boolean trim) {
 
-    public void clear() {
-        super.setText(null);
-        label.setEnabled(true);
-    }
+		String s = getText();
+		if (s == null || s.length() == 0)
+			return null;
 
-    public static String escapeQuotes(String s) {
-        if(s == null) return s;
-        if(s.indexOf('\'') < 0) return s;
-        StringBuffer buffer = new StringBuffer(s.length() + 10);
-        char[] chars = s.toCharArray();
-        for(int j=0; j<chars.length; j++) {
-            if( chars[j] == '\'' ) buffer.append('\'');
-            buffer.append(chars[j]);
-        }
-        return buffer.toString();
-    }
+		if (trim)
+			s = s.trim();
 
-    public String getValueClause(boolean trim) {
+		if (this.isTypeNumeric()) {
+			return s.trim();
+		} else {
+			switch (dataType.intValue()) {
+			case Types.CHAR:
+			case Types.VARCHAR:
+				return ("'" + escapeQuotes(encode(s)) + "'");
+			case 9:
+			case Types.DATE:
+				return ("{d '" + escapeQuotes(s) + "'}");
+			case 10:
+			case Types.TIME:
+				return ("{t '" + escapeQuotes(s) + "'}");
+			case 11:
+			case Types.TIMESTAMP:
+				return ("{ts '" + escapeQuotes(s) + "'}");
+			default:
+				return ("'" + escapeQuotes(encode(s)) + "'");
+			}
+		}
+	}
 
-        String s = getText();
-        if(s == null || s.length() == 0) return null;
+	private String columnNameForQuery = null;
 
-        if(trim) s = s.trim();
+	public String getColumnNameForQuery() {
 
-        if(this.isTypeNumeric()) {
-           return s.trim();
-        }
-        else {
-            switch(dataType.intValue()) {
-                case Types.CHAR :
-                case Types.VARCHAR :        
-                    return ("'" + escapeQuotes(encode(s)) + "'");
-                case 9 :    
-                case Types.DATE :
-                    return ("{d '" + escapeQuotes(s) + "'}");
-                case 10 :   
-                case Types.TIME :
-                    return ("{t '" + escapeQuotes(s) + "'}");
-                case 11 :   
-                case Types.TIMESTAMP :
-                    return ("{ts '" + escapeQuotes(s) + "'}");
-                default :
-                    return ("'" + escapeQuotes(encode(s)) + "'");
-            }
-        }
-    }
+		String temp = columnNameForQuery;
+		if (temp != null)
+			return temp;
 
-    private String columnNameForQuery = null;
+		// check to see if the column name has embedded spaces or hyphens.
+		// if any are found, enclose the column name in double quotation marks.
+		temp = columnName;
+		if (columnName.indexOf(' ') > -1 || columnName.indexOf('-') > -1)
+			temp = "\"" + columnName + "\"";
+		columnNameForQuery = temp;
+		return temp;
+	}
 
-    public String getColumnNameForQuery() {
+	public String getCondition() {
+		return getCondition(true);
+	}
 
-        String temp = columnNameForQuery;
-        if(temp != null) return temp;
+	public String getCondition(boolean useWildcards) {
 
-        // check to see if the column name has embedded spaces or hyphens. 
-        // if any are found, enclose the column name in double quotation marks.
-        temp = columnName;
-        if(columnName.indexOf(' ') > -1 || columnName.indexOf('-') > -1) temp = "\"" + columnName + "\"";
-        columnNameForQuery = temp;
-        return temp;
-    }
+		if (getText().trim().length() == 0 || isTypeDisplayable() == false) {
+			return null;
+		}
 
-    public String getCondition() {
-        return getCondition(true);
-    }
+		String columnNameTemp = getColumnNameForQuery();
 
-    public String getCondition(boolean useWildcards) {
-        
-        if(getText().trim().length() == 0  || isTypeDisplayable() == false) {
-            return null;
-        }
+		String valueClause = getValueClause(true);
 
-        String columnNameTemp = getColumnNameForQuery();
+		if (useWildcards && isTypeNumeric() == false && valueClause != null && valueClause.indexOf("%") > 0) {
+			return columnNameTemp + " LIKE " + valueClause;
+		} else if (useWildcards
+				&& isTypeNumeric()
+				&& valueClause != null
+				&& (valueClause.indexOf(">") == 0 || valueClause.indexOf("<") == 0 || valueClause.toUpperCase()
+						.indexOf("BETWEEN") == 0)) {
+			return columnNameTemp + " " + valueClause;
+		} else {
+			return columnNameTemp + " = " + valueClause;
+		}
+	}
 
-        String valueClause = getValueClause(true);
+	public String getSetClause() {
 
-        if(useWildcards && isTypeNumeric() == false
-           && valueClause != null
-           && valueClause.indexOf("%") > 0) {
-            return columnNameTemp + " LIKE " + valueClause;
-        }
-        else if(useWildcards && isTypeNumeric()
-           && valueClause != null
-           && (valueClause.indexOf(">") == 0 || valueClause.indexOf("<") == 0 || valueClause.toUpperCase().indexOf("BETWEEN") == 0)) {
-            return columnNameTemp + " " + valueClause;
-        }
-        else {
-            return columnNameTemp + " = " + valueClause;
-        }
-    }
+		return getColumnNameForQuery() + " = " + getValueClause(false);
+	}
 
-    public String getSetClause() {
-        
-        return getColumnNameForQuery() + " = " + getValueClause(false);
-    }
+	/**
+	 * Overridden to always return false. In Java versiond 1.3 and prior, this
+	 * causes the tab key to shift focus away from a JTextArea.
+	 */
+	public boolean isManagingFocus() {
+		return managingFocus;
+	}
 
-    /**
-     * Overridden to always return false. In Java versiond 1.3 and prior, this
-     * causes the tab key to shift focus away from a JTextArea.
-     */
-    public boolean isManagingFocus() {
-        return managingFocus;
-    }
+	public void scrollRectToVisible(Rectangle r) {
+	}
 
-    public void scrollRectToVisible(Rectangle r) {}
+	public void setUI(javax.swing.plaf.TextUI ui) {
 
-    public void setUI(javax.swing.plaf.TextUI ui) {
-        
-        boolean isEditingRequired = getBorder() instanceof RequiredFieldBorder;
-        super.setUI(ui);
-        if(isEditingRequired) {
-            setBorder(new RequiredFieldBorder(normalBorder()));
-        }
-        else {
-            setBorder(normalBorder());
-        }
-    }
+		boolean isEditingRequired = getBorder() instanceof RequiredFieldBorder;
+		super.setUI(ui);
+		if (isEditingRequired) {
+			setBorder(new RequiredFieldBorder(normalBorder()));
+		} else {
+			setBorder(normalBorder());
+		}
+	}
 
-    /**
-     * This takes as its argument a HashSet of Integer objects that represent the SQL types
-     * that should be considered displayable and editable by this TextBox. This is for databases
-     * that have data types that are not one of the standard ones defined in java.sql.Types.
-     */
-    public void setEditableTypes(Set editableTypes) {
-        this.editableTypes = editableTypes;
-    }
+	/**
+	 * This takes as its argument a HashSet of Integer objects that represent
+	 * the SQL types that should be considered displayable and editable by this
+	 * TextBox. This is for databases that have data types that are not one of
+	 * the standard ones defined in java.sql.Types.
+	 */
+	public void setEditableTypes(Set<Integer> editableTypes) {
+		this.editableTypes = editableTypes;
+	}
 
 }
-
