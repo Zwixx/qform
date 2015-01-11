@@ -40,15 +40,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.sql.DataSource;
 import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -64,9 +60,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
-import org.glasser.sql.DBUtil;
-import org.glasser.sql.DataSourceManager;
-import org.glasser.sql.LocalDataSourceConfig;
 import org.glasser.sql.TableInfo;
 import org.glasser.swing.ButtonClicker;
 import org.glasser.swing.EnterEscapeKeyHandler;
@@ -77,7 +70,7 @@ public class TableSelector extends JDialog implements ActionListener {
 
 	private static boolean debug = false;
 
-	private class DataSourceListItem implements Comparable<DataSourceListItem> {
+	public class DataSourceListItem implements Comparable<DataSourceListItem> {
 
 		private String displayName = null;
 
@@ -137,7 +130,7 @@ public class TableSelector extends JDialog implements ActionListener {
 
 	HashMap<Integer, DefaultComboBoxModel<String>> schemaModelMap = new HashMap<>();
 
-	HashMap<Integer, HashMap<String, TableInfo>> tableListMap = new HashMap<>();
+	HashMap<Integer, HashMap<String, Vector<TableInfo>>> tableListMap = new HashMap<>();
 
 	private Object[] selections = null;
 
@@ -145,7 +138,7 @@ public class TableSelector extends JDialog implements ActionListener {
 
 	private Integer selectedSourceId = null;
 
-	public void addDataSource(Integer sourceId, String sourceName, HashMap<String, TableInfo> tables) {
+	public void addDataSource(Integer sourceId, String sourceName, HashMap<String, Vector<TableInfo>> tables) {
 
 		DataSourceListItem item = new DataSourceListItem(sourceId, sourceName);
 		sourceVector.add(item);
@@ -328,15 +321,15 @@ public class TableSelector extends JDialog implements ActionListener {
 		}
 
 		if (source == schemaList) {
-			DataSourceListItem sourceItem = (DataSourceListItem) sourceList.getSelectedItem();
+			DataSourceListItem sourceItem = sourceList.getItemAt(sourceList.getSelectedIndex());
 			if (sourceItem == null)
 				return; // all lists are empty.
 			Integer sourceId = sourceItem.getSourceId();
 			String owner = schemaList.getSelectedItem().toString();
-			HashMap schemaTables = tableListMap.get(sourceId);
+			HashMap<String, Vector<TableInfo>> schemaTables = tableListMap.get(sourceId);
 
 			if (owner != null) {
-				Vector v = (Vector) schemaTables.get(owner);
+				Vector<TableInfo> v = schemaTables.get(owner);
 				tableList.setListData(v);
 				tableList.requestFocus();
 				try {

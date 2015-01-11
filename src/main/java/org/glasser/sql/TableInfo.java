@@ -61,202 +61,180 @@
  */
 package org.glasser.sql;
 
+import java.util.HashMap;
 
-import org.glasser.util.*;
-import org.glasser.util.comparators.*;
-import java.util.*;
+import org.glasser.util.comparators.MethodComparator;
 
 public class TableInfo {
 
-    String cachedString = null;
+	String cachedString = null;
 
+	public final static MethodComparator NAME_COMPARATOR = new MethodComparator(TableInfo.class, "getTableName");
 
-    public final static MethodComparator NAME_COMPARATOR =
-        new MethodComparator(org.glasser.sql.TableInfo.class, "getTableName");
+	private String tableCat = null;
+	private String tableSchem = null;
+	private String tableName = null;
+	private String tableType = null;
+	private String remarks = null;
+	private String typeCat = null;
+	private String typeSchem = null;
+	private String typeName = null;
+	private Column[] columns = null;
+	private ForeignKey[] foreignKeys = null;
+	private ForeignKey[] exportedKeys = null;
+	private HashMap<String, Column> columnMap = null;
+	
+	public void setTableCat(String tableCat) {
+		this.tableCat = trimToNull(tableCat);
+	}
 
+	public void setTableSchem(String tableSchem) {
+		this.tableSchem = trimToNull(tableSchem);
+	}
 
-    protected String tableCat = null;
+	public void setTableName(String tableName) {
+		this.tableName = trimToNull(tableName);
+	}
 
-    protected String tableSchem = null;
+	public void setTableType(String tableType) {
+		this.tableType = trimToNull(tableType);
+	}
 
-    protected String tableName = null;
+	public void setRemarks(String remarks) {
+		this.remarks = trimToNull(remarks);
+	}
 
-    protected String tableType = null;
+	public void setTypeCat(String typeCat) {
+		this.typeCat = trimToNull(typeCat);
+	}
 
-    protected String remarks = null;
+	public void setTypeSchem(String typeSchem) {
+		this.typeSchem = trimToNull(typeSchem);
+	}
 
-    protected String typeCat = null;
+	public void setTypeName(String typeName) {
+		this.typeName = trimToNull(typeName);
+	}
 
-    protected String typeSchem = null;
+	public void setColumns(Column[] columns) {
+		columnMap = null;
+		this.columns = columns;
+	}
 
-    protected String typeName = null;
+	public void setForeignKeys(ForeignKey[] foreignKeys) {
+		this.foreignKeys = foreignKeys;
+	}
 
-    protected Column[] columns = null;
+	public void setExportedKeys(ForeignKey[] exportedKeys) {
+		this.exportedKeys = exportedKeys;
+	}
 
-    protected ForeignKey[] foreignKeys = null;
+	public String getTableCat() {
+		return tableCat;
+	}
 
-    protected ForeignKey[] exportedKeys = null;
+	public String getTableSchem() {
+		return tableSchem;
+	}
 
-    protected HashMap columnMap = null;
+	public String getTableName() {
+		return tableName;
+	}
 
-    protected String qualifiedTableName = null;
+	public String getTableType() {
+		return tableType;
+	}
 
+	public String getRemarks() {
+		return remarks;
+	}
 
-    public void setTableCat(String tableCat) {
-        this.tableCat = trimToNull(tableCat);
-    }
+	public String getTypeCat() {
+		return typeCat;
+	}
 
-    public void setTableSchem(String tableSchem) {
-        qualifiedTableName = null;
-        this.tableSchem = trimToNull(tableSchem);
-    }
+	public String getTypeSchem() {
+		return typeSchem;
+	}
 
-    public void setTableName(String tableName) {
-        qualifiedTableName = null;
-        this.tableName = trimToNull(tableName);
-    }
+	public String getTypeName() {
+		return typeName;
+	}
 
-    public void setTableType(String tableType) {
-        this.tableType = trimToNull(tableType);
-    }
+	public Column[] getColumns() {
+		return columns;
+	}
 
-    public void setRemarks(String remarks) {
-        this.remarks = trimToNull(remarks);
-    }
+	public ForeignKey[] getForeignKeys() {
+		return foreignKeys;
+	}
 
-    public void setTypeCat(String typeCat) {
-        this.typeCat = trimToNull(typeCat);
-    }
+	public ForeignKey[] getExportedKeys() {
+		return exportedKeys;
+	}
 
-    public void setTypeSchem(String typeSchem) {
-        this.typeSchem = trimToNull(typeSchem);
-    }
+	protected synchronized HashMap<String, Column> getColumnMap() {
+		HashMap<String, Column> tempMap = columnMap; // thead safety
+		if (tempMap == null) {
+			tempMap = new HashMap<String, Column>();
+			Column[] temp = columns; // thread safety
+			for (int j = 0; temp != null && j < temp.length; j++) {
+				tempMap.put(temp[j].getColumnName(), temp[j]);
+			}
+			columnMap = tempMap;
+		}
+		return tempMap;
+	}
 
-    public void setTypeName(String typeName) {
-        this.typeName = trimToNull(typeName);
-    }
+	public Column getColumn(String columnName) {
+		return getColumnMap().get(columnName);
+	}
 
-    public void setColumns(Column[] columns) {
-        columnMap = null;
-        this.columns = columns;
-    }
+	public String debugString() {
 
-    public void setForeignKeys(ForeignKey[] foreignKeys) {
-        this.foreignKeys = foreignKeys;
-    }
+		StringBuffer buffer = new StringBuffer(200);
+		buffer.append("TableInfo[");
+		buffer.append("tableCat=");
+		buffer.append(tableCat);
+		buffer.append(",tableSchem=");
+		buffer.append(tableSchem);
+		buffer.append(",tableName=");
+		buffer.append(tableName);
+		buffer.append(",tableType=");
+		buffer.append(tableType);
+		buffer.append(",remarks=");
+		buffer.append(remarks);
+		buffer.append(",typeCat=");
+		buffer.append(typeCat);
+		buffer.append(",typeSchem=");
+		buffer.append(typeSchem);
+		buffer.append(",typeName=");
+		buffer.append(typeName);
+		buffer.append("]");
+		return buffer.toString();
 
-    public void setExportedKeys(ForeignKey[] exportedKeys) {
-        this.exportedKeys = exportedKeys;
-    }
+	}
 
+	public String toString() {
+		if (tableName != null)
+			return tableName;
+		else
+			return "TableInfo[tableName=null]";
+	}
 
+	/**
+	 * Returns the tableName enclosed in the provided "quote" characters, if the
+	 * tableName contains a space or a hyphen, otherwise returns the tableName
+	 * as-is. Normally, the openQuote and closeQuote args will both be regular
+	 * double quotation marks ("), however, Microsoft databases use square
+	 * brackets ([ and ]).
+	 */
+	public String maybeQuoteTableName(char openQuote, char closeQuote) {
 
-    public String getTableCat() {
-        return tableCat;
-    }
+		if (tableName == null)
+			return null;
 
-    public String getTableSchem() {
-        return tableSchem;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public String getTableType() {
-        return tableType;
-    }
-
-    public String getRemarks() {
-        return remarks;
-    }
-
-    public String getTypeCat() {
-        return typeCat;
-    }
-
-    public String getTypeSchem() {
-        return typeSchem;
-    }
-
-    public String getTypeName() {
-        return typeName;
-    }
-
-    public Column[] getColumns() {
-        return columns;
-    }
-
-    public ForeignKey[] getForeignKeys() {
-        return foreignKeys;
-    }
-
-    public ForeignKey[] getExportedKeys() {
-        return exportedKeys;
-    }
-
-
-    protected synchronized HashMap getColumnMap() {
-        HashMap tempMap = columnMap; // thead safety
-        if(tempMap == null) {
-            tempMap = new HashMap(); 
-            Column[] temp = columns; // thread safety
-            for(int j=0; temp != null && j<temp.length; j++) {
-                tempMap.put(temp[j].getColumnName(), temp[j]);
-            }
-            columnMap = tempMap;
-        }
-        return tempMap;
-    }
-
-    public Column getColumn(String columnName) {
-        return (Column) getColumnMap().get(columnName);
-    }
-
-
-    public String debugString() {
-
-        StringBuffer buffer = new StringBuffer(200);
-        buffer.append("TableInfo[");
-        buffer.append("tableCat=");
-        buffer.append(tableCat);
-        buffer.append(",tableSchem=");
-        buffer.append(tableSchem);
-        buffer.append(",tableName=");
-        buffer.append(tableName);
-        buffer.append(",tableType=");
-        buffer.append(tableType);
-        buffer.append(",remarks=");
-        buffer.append(remarks);
-        buffer.append(",typeCat=");
-        buffer.append(typeCat);
-        buffer.append(",typeSchem=");
-        buffer.append(typeSchem);
-        buffer.append(",typeName=");
-        buffer.append(typeName);
-        buffer.append("]");
-        return buffer.toString();
-
-    }
-
-
-    public String toString() {
-        if(tableName != null) return tableName;
-        else return "TableInfo[tableName=null]";
-    }
-
-
-    /**
-     * Returns the tableName enclosed in the provided "quote" characters, if
-     * the tableName contains a space or a hyphen, otherwise returns the tableName as-is.
-     * Normally, the openQuote and closeQuote args will both be regular double quotation 
-     * marks ("), however, Microsoft databases use square brackets ([ and ]).
-     */
-    public String maybeQuoteTableName(char openQuote, char closeQuote) {
-
-		if(tableName == null) return null;
-
-		if(tableName.indexOf(' ') < 0 && tableName.indexOf('-') < 0) {
+		if (tableName.indexOf(' ') < 0 && tableName.indexOf('-') < 0) {
 			return tableName;
 		}
 
@@ -266,17 +244,19 @@ public class TableInfo {
 
 	}
 
-    /**
-     * Returns the tableSchem field enclosed in the provided "quote" characters, if
-     * the tableName contains a space or a hyphen, otherwise returns the tableSchem as-is.
-     * Normally, the openQuote and closeQuote args will both be regular double quotation 
-     * marks ("), however, Microsoft databases use square brackets ([ and ]).
-     */
+	/**
+	 * Returns the tableSchem field enclosed in the provided "quote" characters,
+	 * if the tableName contains a space or a hyphen, otherwise returns the
+	 * tableSchem as-is. Normally, the openQuote and closeQuote args will both
+	 * be regular double quotation marks ("), however, Microsoft databases use
+	 * square brackets ([ and ]).
+	 */
 	public String maybeQuoteTableSchem(char openQuote, char closeQuote) {
 
-		if(tableSchem == null || tableSchem.trim().length() == 0) return null;
+		if (tableSchem == null || tableSchem.trim().length() == 0)
+			return null;
 
-		if(tableSchem.indexOf(' ') < 0 && tableSchem.indexOf('-') < 0) {
+		if (tableSchem.indexOf(' ') < 0 && tableSchem.indexOf('-') < 0) {
 			return tableSchem;
 		}
 
@@ -286,50 +266,44 @@ public class TableInfo {
 
 	}
 
+	/**
+	 * Returns the tableName prefixed by the tableSchem field and a dot, if the
+	 * tableSchem field contains non-whitespace characters. If the tableSchem
+	 * field is null or whitespace, then only the tableName is returned. Either
+	 * the tableSchem or tableName may be enclosed in the provided quoting
+	 * characters, if they contain spaces or hyphens.
+	 */
+	public String getQualifiedTableName(char openQuote, char closeQuote) {
 
-    /**
-     * Returns the tableName prefixed by the tableSchem field and a dot, if the tableSchem field
-     * contains non-whitespace characters.  If the tableSchem field is null or whitespace, then only 
-     * the tableName is returned. Either the tableSchem or tableName may be enclosed in
-     * the provided quoting characters, if they contain spaces or hyphens.
-     */
-    public String getQualifiedTableName(char openQuote, char closeQuote) {
-
-		
 		String table = maybeQuoteTableName(openQuote, closeQuote);
-		if(table == null) return null;
+		if (table == null)
+			return null;
 
 		String schem = maybeQuoteTableSchem(openQuote, closeQuote);
-		if(schem == null) return table;
+		if (schem == null)
+			return table;
 
 		StringBuffer buffer = new StringBuffer(table.length() + schem.length() + 2);
 		return buffer.append(schem).append('.').append(table).toString();
 
 	}
 
-
-
-		
-
-
-
-
-    /**
-     * Calls getQualifiedTableName(char, char) using double quotation marks as
-     * the openQuote and closeQuote.
-     */
-    public String getQualifiedTableName() {
+	/**
+	 * Calls getQualifiedTableName(char, char) using double quotation marks as
+	 * the openQuote and closeQuote.
+	 */
+	public String getQualifiedTableName() {
 		return getQualifiedTableName('"', '"');
-    }
+	}
 
-    /**
-     * Trims whitespace, and returns null if the String is zero-length
-     * or all whitespace.
-     */
-    public String trimToNull(String s) {
-        if(s == null || (s = s.trim()).length() == 0) return null;
-        return s;
-    }
+	/**
+	 * Trims whitespace, and returns null if the String is zero-length or all
+	 * whitespace.
+	 */
+	public String trimToNull(String s) {
+		if (s == null || (s = s.trim()).length() == 0)
+			return null;
+		return s;
+	}
 
 }
- 
