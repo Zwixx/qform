@@ -32,217 +32,193 @@
  */
 package org.glasser.qform;
 
-import javax.swing.*;
-import org.glasser.util.*;
-import org.glasser.sql.*;
-import org.glasser.swing.*;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
 import java.text.SimpleDateFormat;
 
-
+import org.glasser.sql.DBUtil;
+import org.glasser.sql.TableInfo;
+import org.glasser.util.Formatter;
 
 public class CsvExportPanel extends ExportPanel {
 
+	private static final Formatter numFormatter = new Formatter() {
 
+		public String getFormattedString(Object obj) {
+			if (obj == null)
+				return "";
+			else
+				return obj.toString();
+		}
 
-    private static final Formatter numFormatter =
-        new Formatter() {
+		public String toString() {
+			return "<Copy Value>";
+		}
+	};
 
-            public String getFormattedString(Object obj) {
-                if(obj == null) return "";
-                else return obj.toString();
-            }
+	private static final Formatter nullFormatter = new Formatter() {
 
-            public String toString() {
-                return "<Copy Value>";
-            }
-        };
+		public String getFormattedString(Object obj) {
+			return "";
+		}
 
-    private static final Formatter nullFormatter =
-        new Formatter() {
+		public String toString() {
+			return "<Empty String>";
+		}
+	};
 
-            public String getFormattedString(Object obj) {
-                return "";
-            }
+	private static class TimestampFormatter implements Formatter {
 
-            public String toString() {
-                return "<Empty String>";
-            }
-        };
+		public final static int TIME_ESCAPE = 0;
 
+		public final static int DATE_ESCAPE = 1;
 
-    private static class TimestampFormatter implements Formatter {
+		public final static int TIMESTAMP_ESCAPE = 2;
 
-        public final static int TIME_ESCAPE = 0;
+		public final static int TIME_STRING = 3;
 
-        public final static int DATE_ESCAPE = 1;
+		public final static int DATE_STRING = 4;
 
-        public final static int TIMESTAMP_ESCAPE = 2;
+		public final static int TIMESTAMP_STRING = 5;
 
-        public final static int TIME_STRING = 3;
+		private int formatStyle = TIMESTAMP_STRING;
 
-        public final static int DATE_STRING = 4;
+		private final static SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss");
 
-        public final static int TIMESTAMP_STRING = 5;
+		private final static SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
 
-        private int formatStyle = TIMESTAMP_STRING;
+		private final static SimpleDateFormat TIMESTAMP_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        private final static SimpleDateFormat TIME_FORMATTER =
-            new SimpleDateFormat("HH:mm:ss");
+		public TimestampFormatter(int formatStyle) {
+			this.formatStyle = formatStyle;
+		}
 
-        private final static SimpleDateFormat DATE_FORMATTER =
-            new SimpleDateFormat("yyyy-MM-dd");
+		public String getFormattedString(Object obj) {
+			if (obj == null)
+				return "NULL";
 
-        private final static SimpleDateFormat TIMESTAMP_FORMATTER =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			java.util.Date date = (java.util.Date) obj;
 
-        public TimestampFormatter() {}
+			switch (formatStyle) {
+			case TIME_ESCAPE:
+				return "{t '" + TIME_FORMATTER.format(date) + "'}";
+			case DATE_ESCAPE:
+				return "{d '" + DATE_FORMATTER.format(date) + "'}";
+			case TIMESTAMP_ESCAPE:
+				return "{ts '" + TIMESTAMP_FORMATTER.format(date) + "'}";
+			case TIME_STRING:
+				return "'" + TIME_FORMATTER.format(date) + "'";
+			case DATE_STRING:
+				return "'" + DATE_FORMATTER.format(date) + "'";
+			default:
+				return "'" + TIMESTAMP_FORMATTER.format(date) + "'";
 
-        public TimestampFormatter(int formatStyle) {
-            this.formatStyle = formatStyle;
-        }
+			}
+		}
 
+		public String toString() {
 
+			switch (formatStyle) {
+			case TIME_ESCAPE:
+				return "{t 'hh:mm:ss'}";
+			case DATE_ESCAPE:
+				return "{d 'YYYY-MM-DD'}";
+			case TIMESTAMP_ESCAPE:
+				return "{ts 'YYYY-MM-DD hh:mm:ss'}";
+			case TIME_STRING:
+				return "'hh:mm:ss'";
+			case DATE_STRING:
+				return "'YYYY-MM-DD'";
+			default: // TIMESTAMP_STRING
+				return "'YYYY-MM-DD hh:mm:ss'";
 
-        public String getFormattedString(Object obj) {
-            if(obj == null) return "NULL";
+			}
+		}
 
-            java.util.Date date = (java.util.Date) obj;
+	}
 
-            switch(formatStyle) {
-                case TIME_ESCAPE :
-                    return "{t '" + TIME_FORMATTER.format(date) + "'}";
-                case DATE_ESCAPE :
-                    return "{d '" + DATE_FORMATTER.format(date) + "'}";
-                case TIMESTAMP_ESCAPE :
-                    return "{ts '" + TIMESTAMP_FORMATTER.format(date) + "'}";
-                case TIME_STRING :
-                    return "'" + TIME_FORMATTER.format(date) + "'";
-                case DATE_STRING :
-                    return "'" + DATE_FORMATTER.format(date) + "'";
-                default :
-                    return "'" + TIMESTAMP_FORMATTER.format(date) + "'";
+	/**
+	 * This escapes a field for an Excel-style CSV file.
+	 */
+	private static class CsvFormatter implements Formatter {
 
-            }
-        }
+		public String getFormattedString(Object obj) {
 
-        public String toString() {
+			if (obj == null)
+				return "";
+			String val = (String) obj;
+			val = val.trim();
 
-            switch(formatStyle) {
-                case TIME_ESCAPE :
-                    return "{t 'hh:mm:ss'}";
-                case DATE_ESCAPE :
-                    return "{d 'YYYY-MM-DD'}";
-                case TIMESTAMP_ESCAPE :
-                    return "{ts 'YYYY-MM-DD hh:mm:ss'}";
-                case TIME_STRING :
-                    return "'hh:mm:ss'";
-                case DATE_STRING :
-                    return "'YYYY-MM-DD'";
-                default : // TIMESTAMP_STRING
-                    return "'YYYY-MM-DD hh:mm:ss'";
+			// First, scan the string for characters that require escaping.
+			// This way we can avoid creating the StringBuffer object if we
+			// don't need to.
+			char[] chars = val.toCharArray();
+			boolean needsEscaping = false;
+			for (int j = 0; j < chars.length; j++) {
+				if (chars[j] == ',' || chars[j] == '\n' || chars[j] == '"') {
+					needsEscaping = true;
+					break;
+				}
+			}
 
-            }
-        }
+			// if no bad characters were found, return the orginal value
+			if (needsEscaping == false)
+				return val;
 
-    }
+			// otherwise, the string needs escaping
+			StringBuffer buffer = new StringBuffer(val.length() + 20);
+			buffer.append('"');
+			for (int j = 0; j < chars.length; j++) {
+				if (chars[j] == '"') {
+					buffer.append('"');
+				} else if (chars[j] == '\r' && chars.length > j + 1 && chars[j + 1] == '\n') {
+					// "\r\n" is normalized to '\n', so skip past the '\r'.
+					j++;
+				}
 
-    /**
-     * This escapes a field for an Excel-style CSV file.
-     */
-    private static class CsvFormatter implements Formatter {
+				buffer.append(chars[j]);
+			}
 
-        public String getFormattedString(Object obj) {
+			buffer.append('"');
 
-            if(obj == null) return "";
-            String val = (String) obj;
-            val = val.trim();
+			return buffer.toString();
+		}
 
-            // First, scan the string for characters that require escaping.
-            // This way we can avoid creating the StringBuffer object if we don't need to.
-            char[] chars = val.toCharArray();
-            boolean needsEscaping = false;
-            for(int j=0; j<chars.length; j++) { 
-                if(chars[j] == ',' || chars[j] == '\n' || chars[j] == '"') {
-                    needsEscaping = true;
-                    break;
-                }
-            }
+		public String toString() {
+			return "<Copy Value>";
+		}
 
-            // if no bad characters were found, return the orginal value
-            if(needsEscaping == false) return val;
+	}
 
-            // otherwise, the string needs escaping
-            StringBuffer buffer = new StringBuffer(val.length() + 20);
-            buffer.append('"');
-            for(int j=0; j<chars.length; j++) { 
-                if(chars[j] == '"') {
-                    buffer.append('"');
-                }
-                else if(chars[j] == '\r' && chars.length > j+1 && chars[j+1] == '\n') {
-                    // "\r\n" is normalized to '\n', so skip past the '\r'.
-                    j++;
-                }
+	private static CsvFormatter charFormatter = new CsvFormatter();
 
-                buffer.append(chars[j]);
-            }
+	private static final Object[] charChoices = { "", charFormatter, nullFormatter };
 
-            buffer.append('"');
+	private static final Object[] numChoices = { "", numFormatter, nullFormatter };
 
-            return buffer.toString();
-        }
+	private static final Object[] binChoices = { "", nullFormatter };
 
-        public String toString() {
-            return "<Copy Value>";
-        }
+	private static final Object[] dateTimeChoices = { "", nullFormatter,
+			new TimestampFormatter(TimestampFormatter.TIMESTAMP_STRING),
+			new TimestampFormatter(TimestampFormatter.DATE_STRING),
+			new TimestampFormatter(TimestampFormatter.TIME_STRING),
+			new TimestampFormatter(TimestampFormatter.TIMESTAMP_ESCAPE),
+			new TimestampFormatter(TimestampFormatter.DATE_ESCAPE),
+			new TimestampFormatter(TimestampFormatter.TIME_ESCAPE) };
 
-    }
+	public CsvExportPanel(TableInfo ti) {
+		super(ti);
+	}
 
-    private static CsvFormatter charFormatter = new CsvFormatter();
+	protected Object[] getFormatterChoices(int type) {
+		if (DBUtil.isCharType(type)) {
+			return charChoices;
+		} else if (DBUtil.isNumericType(type)) {
+			return numChoices;
+		} else if (DBUtil.isDateTimeType(type)) {
+			return dateTimeChoices;
+		} else {
+			return binChoices;
+		}
 
-    private static final Object[] charChoices = {"", charFormatter, nullFormatter};
-
-    private static final Object[] numChoices = {"", numFormatter, nullFormatter};
-
-    private static final Object[] binChoices = {"", nullFormatter};
-
-    private static final Object[] dateTimeChoices =
-    {
-        "" 
-        ,nullFormatter
-        ,new TimestampFormatter(TimestampFormatter.TIMESTAMP_STRING)
-        ,new TimestampFormatter(TimestampFormatter.DATE_STRING)
-        ,new TimestampFormatter(TimestampFormatter.TIME_STRING)
-        ,new TimestampFormatter(TimestampFormatter.TIMESTAMP_ESCAPE)
-        ,new TimestampFormatter(TimestampFormatter.DATE_ESCAPE)
-        ,new TimestampFormatter(TimestampFormatter.TIME_ESCAPE)
-    };
-
-
-    public CsvExportPanel(TableInfo ti) {
-        super(ti);
-    }
-
-    protected Object[] getFormatterChoices(int type) {
-        if(DBUtil.isCharType(type)) {
-            return charChoices;
-        }
-        else if(DBUtil.isNumericType(type)) {
-            return numChoices;
-        }
-        else if(DBUtil.isDateTimeType(type)) {
-            return dateTimeChoices;
-        }
-        else {
-            return binChoices;
-        }
-
-        
-    }
-
-
+	}
 
 }

@@ -85,12 +85,12 @@ public class MapComparator<T extends Map<K, V>, K, V> extends BaseComparator<Map
 		this.key = key;
 	}
 
-	public MapComparator(K key, Comparator valueComparator) {
+	public MapComparator(K key, Comparator<V> valueComparator) {
 		this.key = key;
 		this.valueComparator = valueComparator;
 	}
 
-	public MapComparator(Object key, Comparator valueComparator, boolean nullIsGreater, boolean sortDescending,
+	public MapComparator(Object key, Comparator<V> valueComparator, boolean nullIsGreater, boolean sortDescending,
 			Comparator nestedComparator) {
 		super(nullIsGreater, sortDescending, nestedComparator);
 		this.key = key;

@@ -32,116 +32,111 @@
  */
 package org.glasser.qform;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
 
-import org.glasser.swing.*;
-import org.glasser.util.*;
-
+import org.glasser.swing.EnterEscapeKeyHandler;
 
 public class ColumnMapDialog extends JDialog implements ActionListener {
 
+	JList<String> list = new JList<>();
 
-    JList list = new JList();
+	JButton btnSelectAll = new JButton("Select All");
+	JButton btnOK = new JButton("OK");
+	JButton btnCancel = new JButton("Cancel");
 
-    JButton btnSelectAll = new JButton("Select All");
-    JButton btnOK = new JButton("OK");
-    JButton btnCancel = new JButton("Cancel");
+	private int[] selections = null;
 
+	Object[][] buttonConfig = { { btnSelectAll, "A", "SELECT_ALL", "Select all listed columns." },
+			{ btnOK, "O", "OK", "Accept selections." }, { btnCancel, "C", "CANCEL", "Discard selections." } };
 
-    private int[] selections = null;
+	public ColumnMapDialog(Frame parent) {
 
-    Object[][] buttonConfig = 
-    {
-         {btnSelectAll, "A", "SELECT_ALL", "Select all listed columns."}
-        ,{btnOK,   "O", "OK", "Accept selections."}
-        ,{btnCancel, "C", "CANCEL", "Discard selections."}
-    };
+		super(parent);
+		setTitle("Select Visible Columns");
 
-    public ColumnMapDialog(Frame parent) {
+		JPanel cp = new JPanel();
+		cp.setLayout(new BorderLayout());
 
-        super(parent);
-        setTitle("Select Visible Columns");
+		list.setToolTipText("Ctrl-click to select/deselect columns.");
 
-        JPanel cp = new JPanel();
-        cp.setLayout(new BorderLayout());
+		cp.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        list.setToolTipText("Ctrl-click to select/deselect columns.");
+		JPanel centerPanel = new JPanel();
+		centerPanel.setLayout(new BorderLayout());
+		JLabel prompt = new JLabel("Ctrl-click to select/deselect columns.");
+		prompt.setBorder(new EmptyBorder(10, 0, 0, 0));
+		centerPanel.add(prompt, BorderLayout.SOUTH);
 
+		centerPanel.add(new JScrollPane(list), BorderLayout.CENTER);
+		cp.add(centerPanel, BorderLayout.CENTER);
 
-        cp.setBorder(new EmptyBorder(10,10,10,10));
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+		buttonPanel.setLayout(new FlowLayout());
+		for (int j = 0; j < buttonConfig.length; j++) {
+			JButton button = (JButton) buttonConfig[j][0];
+			button.setMnemonic(((String) buttonConfig[j][1]).charAt(0));
+			button.setActionCommand((String) buttonConfig[j][2]);
+			button.setToolTipText((String) buttonConfig[j][3]);
+			button.addActionListener(this);
+			buttonPanel.add(button);
+		}
+		cp.add(buttonPanel, BorderLayout.SOUTH);
 
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BorderLayout());
-        JLabel prompt = new JLabel("Ctrl-click to select/deselect columns.");
-        prompt.setBorder(new EmptyBorder(10, 0, 0, 0));
-        centerPanel.add(prompt, BorderLayout.SOUTH);
+		addKeyListener(new EnterEscapeKeyHandler(btnOK, btnCancel));
 
+		setContentPane(cp);
 
-        centerPanel.add(new JScrollPane(list), BorderLayout.CENTER);
-        cp.add(centerPanel, BorderLayout.CENTER);
+		list.setVisibleRowCount(20);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
-        buttonPanel.setLayout(new FlowLayout());
-        for(int j=0; j<buttonConfig.length; j++) {
-            JButton button = (JButton) buttonConfig[j][0];
-            button.setMnemonic(((String) buttonConfig[j][1]).charAt(0));
-            button.setActionCommand((String) buttonConfig[j][2]);
-            button.setToolTipText((String) buttonConfig[j][3]);
-            button.addActionListener(this);
-            buttonPanel.add(button);
-        }
-        cp.add(buttonPanel, BorderLayout.SOUTH);
+		setModal(true);
+		pack();
+	}
 
-        addKeyListener(new EnterEscapeKeyHandler(btnOK, btnCancel));
+	public void openDialog(String[] columnNames, int[] selections) {
 
-        setContentPane(cp);
+		list.setListData(columnNames);
 
-        list.setVisibleRowCount(20);
+		if (selections != null)
+			list.setSelectedIndices(selections);
 
-        setModal(true);
-        pack();
-    }
+		setModal(true);
+		selections = null;
+		super.setVisible(true);
 
-    public void openDialog(String[] columnNames, int[] selections) {
+	}
 
-        list.setListData(columnNames);
+	public int[] getSelections() {
+		return selections;
+	}
 
-        if(selections != null) list.setSelectedIndices(selections);
-
-        setModal(true);
-        selections = null;
-        super.setVisible(true);
-
-    }
-
-
-    public int[] getSelections() {
-        return selections;
-    }
-
-
-    public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-        if(command.equals("OK")) {
-            selections = list.getSelectedIndices();
-            if(selections.length == 0) selections = null;
-            setVisible(false);
-        }
-        else if(command.equals("CANCEL")) {
-            setVisible(false);
-        }
-        else if(command.equals("SELECT_ALL")) {
-            int size = list.getModel().getSize();
-            if(size > 0) {
-                list.setSelectionInterval(0, size-1);
-            }
-        }
-    }
+	public void actionPerformed(ActionEvent e) {
+		String command = e.getActionCommand();
+		if (command.equals("OK")) {
+			selections = list.getSelectedIndices();
+			if (selections.length == 0)
+				selections = null;
+			setVisible(false);
+		} else if (command.equals("CANCEL")) {
+			setVisible(false);
+		} else if (command.equals("SELECT_ALL")) {
+			int size = list.getModel().getSize();
+			if (size > 0) {
+				list.setSelectionInterval(0, size - 1);
+			}
+		}
+	}
 
 }

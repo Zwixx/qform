@@ -32,41 +32,40 @@
  */
 package org.glasser.qform;
 
-import javax.swing.*;
-import java.awt.*;
-import org.glasser.sql.*;
+import java.awt.Component;
+import java.awt.Font;
+import java.util.HashMap;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 
+import org.glasser.sql.TableInfo;
 
-public class TableInfoListCellRenderer extends DefaultListCellRenderer {
+public class TableInfoListCellRenderer<V> extends DefaultListCellRenderer {
 
+	HashMap italicFontMap = new HashMap();
 
-	java.util.HashMap italicFontMap = new java.util.HashMap();
+	public Component getListCellRendererComponent(JList list, TableInfo value, int index, boolean isSelected,
+			boolean cellHasFocus) {
 
-    public Component getListCellRendererComponent(JList list,
-                                              Object value,
-                                              int index,
-                                              boolean isSelected,
-                                              boolean cellHasFocus) {
+		JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        JLabel component = (JLabel) super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-
-        if(value instanceof TableInfo) {
-            TableInfo ti = (TableInfo) value;
-            if("VIEW".equals(ti.getTableType())) {
+		if (value instanceof TableInfo) {
+			TableInfo ti = (TableInfo) value;
+			if ("VIEW".equals(ti.getTableType())) {
 				Font font = component.getFont();
 				Font viewFont = (Font) italicFontMap.get(font);
-				if(viewFont == null) {
+				if (viewFont == null) {
 					viewFont = font.deriveFont(Font.ITALIC);
 					italicFontMap.put(font, viewFont);
 				}
-                component.setFont(viewFont);
-            }
-        }
+				component.setFont(viewFont);
+			}
+		}
 
-        return component;
+		return component;
 
-    }
-
+	}
 
 }

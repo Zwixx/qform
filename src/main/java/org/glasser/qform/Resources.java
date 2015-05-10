@@ -181,7 +181,7 @@ public class Resources extends ResourceBundle {
 
     };
 
-    private Hashtable map = new Hashtable();
+    private Hashtable<String, String> map = new Hashtable<>();
 
     public Resources() {
         for(int j=0; j<mappings.length; j++) {
@@ -193,7 +193,7 @@ public class Resources extends ResourceBundle {
         return map.get(key);
     }
 
-    public Enumeration getKeys() {
+    public Enumeration<String> getKeys() {
         return map.keys();
     }
 
