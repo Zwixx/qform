@@ -62,8 +62,12 @@
 package org.glasser.sql;
 
 
-import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import org.glasser.util.ExtensionClassLoader;
 
 

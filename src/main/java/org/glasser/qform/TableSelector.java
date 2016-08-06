@@ -262,7 +262,7 @@ public class TableSelector extends JDialog implements ActionListener {
 		});
 		tableList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		tableList.setCellRenderer(new TableInfoListCellRenderer());
+		tableList.setCellRenderer(new TableInfoListCellRenderer<TableInfo>());
 
 		setModal(true);
 		this.addComponentListener(new ComponentAdapter() {

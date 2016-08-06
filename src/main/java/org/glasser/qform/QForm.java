@@ -41,17 +41,17 @@ package org.glasser.qform;
 
 
 
-import javax.swing.*;
-import org.glasser.util.*;
-import org.glasser.swing.*;
-import java.io.*;
-import java.util.*;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import java.net.*;
-import java.awt.*;
+import java.awt.Toolkit;
+import java.io.File;
+import java.net.URL;
+
+import javax.swing.JFrame;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+
+import org.glasser.swing.GUIHelper;
+import org.glasser.util.ExtensionClassLoader;
+import org.glasser.util.Util;
 
 
 

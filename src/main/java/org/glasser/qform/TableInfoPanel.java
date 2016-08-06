@@ -118,15 +118,15 @@ public class TableInfoPanel extends JPanel {
 	 * This comparator is used to sort the ForeignKey objects displayed on the
 	 * Foreign Keys tab.
 	 */
-	private final static MethodComparator FOREIGN_KEY_COMPARATOR = new MethodComparator(ForeignKey.class,
-			"getForeignTableName", false, false, new MethodComparator(ForeignKey.class, "getForeignKeyName"), false);
+	private final static MethodComparator<ForeignKey> FOREIGN_KEY_COMPARATOR = new MethodComparator<ForeignKey>(ForeignKey.class,
+			"getForeignTableName", false, false, new MethodComparator<ForeignKey>(ForeignKey.class, "getForeignKeyName"), false);
 
 	/**
 	 * This comparator is used to sort the ForeignKey objects displayed on the
 	 * Exported Keys tab.
 	 */
-	private final static MethodComparator EXPORTED_KEY_COMPARATOR = new MethodComparator(ForeignKey.class,
-			"getLocalTableName", false, false, new MethodComparator(ForeignKey.class, "getForeignKeyName"), false);
+	private final static MethodComparator<ForeignKey> EXPORTED_KEY_COMPARATOR = new MethodComparator<ForeignKey>(ForeignKey.class,
+			"getLocalTableName", false, false, new MethodComparator<ForeignKey>(ForeignKey.class, "getForeignKeyName"), false);
 
 	public TableInfoPanel(TableInfo tableInfo, String dataSourceName) throws NoSuchMethodException {
 

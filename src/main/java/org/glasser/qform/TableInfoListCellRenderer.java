@@ -44,24 +44,22 @@ import org.glasser.sql.TableInfo;
 
 public class TableInfoListCellRenderer<V> extends DefaultListCellRenderer {
 
-	HashMap italicFontMap = new HashMap();
+	HashMap<Font, Font> italicFontMap = new HashMap<>();
 
-	public Component getListCellRendererComponent(JList list, TableInfo value, int index, boolean isSelected,
+	public Component getListCellRendererComponent(JList<?> list, TableInfo value, int index, boolean isSelected,
 			boolean cellHasFocus) {
 
 		JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-		if (value instanceof TableInfo) {
-			TableInfo ti = (TableInfo) value;
-			if ("VIEW".equals(ti.getTableType())) {
-				Font font = component.getFont();
-				Font viewFont = (Font) italicFontMap.get(font);
-				if (viewFont == null) {
-					viewFont = font.deriveFont(Font.ITALIC);
-					italicFontMap.put(font, viewFont);
-				}
-				component.setFont(viewFont);
+		TableInfo ti = value;
+		if ("VIEW".equals(ti.getTableType())) {
+			Font font = component.getFont();
+			Font viewFont = italicFontMap.get(font);
+			if (viewFont == null) {
+				viewFont = font.deriveFont(Font.ITALIC);
+				italicFontMap.put(font, viewFont);
 			}
+			component.setFont(viewFont);
 		}
 
 		return component;

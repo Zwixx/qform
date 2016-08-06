@@ -89,53 +89,18 @@ public class KeySelectableJList<T> extends JList<T> {
 		super(listData);
 	}
 
-	final static boolean javaVersionOnePointFourOrGreater;
-
-	static {
-		String version = System.getProperty("java.version");
-		System.out.println("Java Version: " + version);
-		if (version != null && version.compareTo("1.3.9") > 0) {
-			javaVersionOnePointFourOrGreater = true;
-			System.out
-					.println("Java version is 1.4 or greater, built-in JList key selection functionality will be used.");
-		} else {
-			javaVersionOnePointFourOrGreater = false;
-		}
-	}
-
 	public void processKeyEvent(KeyEvent ev) {
 
 		// System.out.println("\nPROCESS KEY EVENT.");
 
 		super.processKeyEvent(ev);
 
-		if (javaVersionOnePointFourOrGreater) {
-
-			// if this is version 1.4 or greater, the only thing we want
-			// to do is scroll the list to the selected item (if it is in a
-			// JScrollPane.)
-			int index = this.getSelectedIndex();
-			if (index > -1) {
-				this.ensureIndexIsVisible(index);
-			}
-			return;
-		}
-
-		// if this a Java version prior to 1.4, we will invoke the key selection
-		// logic.
-		if (ev.getID() == KeyEvent.KEY_PRESSED) {
-
-			// see if this is a letter key.
-			char keyChar = ev.getKeyChar();
-			if ((Character.isLetter(keyChar) && ev.isAltDown() == false)) {
-				int index = selectionForKey(keyChar);
-				if (index > -1) {
-					// System.out.println("SETTING SELECTED INDEX TO: " +
-					// index);
-					this.setSelectedIndex(index);
-					this.ensureIndexIsVisible(index);
-				}
-			}
+		// if this is version 1.4 or greater, the only thing we want
+		// to do is scroll the list to the selected item (if it is in a
+		// JScrollPane.)
+		int index = this.getSelectedIndex();
+		if (index > -1) {
+			this.ensureIndexIsVisible(index);
 		}
 	}
 

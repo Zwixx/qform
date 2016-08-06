@@ -4,6 +4,11 @@
 	<groupId>org.glasser</groupId>
 	<artifactId>qform</artifactId>
 	<version>1.4.0</version>
+	
+	<build>
+		<finalName>${project.artifactId}</finalName>
+	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>commons-collections</groupId>

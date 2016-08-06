@@ -32,5 +32,14 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="F:/Development/.m2/repository/commons-pool/commons-pool/1.5.4/commons-pool-1.5.4.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="commons-pool"/>
+			<attribute name="maven.artifactId" value="commons-pool"/>
+			<attribute name="maven.version" value="1.5.4"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

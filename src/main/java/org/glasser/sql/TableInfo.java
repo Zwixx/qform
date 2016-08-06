@@ -69,7 +69,7 @@ public class TableInfo {
 
 	String cachedString = null;
 
-	public final static MethodComparator NAME_COMPARATOR = new MethodComparator(TableInfo.class, "getTableName");
+	public final static MethodComparator<TableInfo> NAME_COMPARATOR = new MethodComparator<TableInfo>(TableInfo.class, "getTableName");
 
 	private String tableCat = null;
 	private String tableSchem = null;
