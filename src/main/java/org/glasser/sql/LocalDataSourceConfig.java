@@ -61,155 +61,152 @@
  */
 package org.glasser.sql;
 
-import org.glasser.util.*;
-import org.glasser.util.comparators.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
+import org.glasser.util.comparators.MethodComparator;
 
 public class LocalDataSourceConfig implements java.io.Serializable, Cloneable {
 
+	public final static MethodComparator<LocalDataSourceConfig> DISPLAY_NAME_COMPARATOR = new MethodComparator<LocalDataSourceConfig>(
+			LocalDataSourceConfig.class, "getDisplayName");
 
+	protected String displayName = null;
+	protected String driverClassName = null;
+	protected boolean loginRequired = false;
+	protected String url = null;
+	protected String user = null;
+	protected String password = null;
+	protected Integer maxConnections = null;
+	protected Integer loginTimeout = null;
 
-    public final static MethodComparator DISPLAY_NAME_COMPARATOR =
-        new MethodComparator(org.glasser.sql.LocalDataSourceConfig.class, "getDisplayName");
+	public LocalDataSourceConfig(LocalDataSourceConfig config) {
+		this.displayName = config.displayName;
+		this.driverClassName = config.driverClassName;
+		this.loginRequired = config.loginRequired;
+		this.loginTimeout = config.loginTimeout;
+		this.maxConnections = config.maxConnections;
+		this.password = config.password;
+		this.url = config.url;
+		this.user = config.user;
+	}
 
+	// setters
+	
+	public Connection getConnection() {
+		try {
+			Class.forName(driverClassName);
+			return DriverManager.getConnection(url, user, password);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    protected String displayName = null;
+	public LocalDataSourceConfig() {
+	}
 
-    protected String driverClassName = null;
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
 
-    protected boolean loginRequired = false;    
+	public void setDriverClassName(String driverClassName) {
+		this.driverClassName = driverClassName;
+	}
 
-    protected String url = null;
+	public void setLoginRequired(boolean loginRequired) {
+		this.loginRequired = loginRequired;
+	}
 
-    protected String user = null;
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    protected String password = null;
+	public void setUser(String user) {
+		this.user = user;
+	}
 
-    protected Integer maxConnections = null;
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    protected Integer loginTimeout = null;
+	public void setMaxConnections(Integer maxConnections) {
+		this.maxConnections = maxConnections;
+	}
 
+	public void setLoginTimeout(Integer loginTimeout) {
+		this.loginTimeout = loginTimeout;
+	}
 
-    // setters
+	// getters
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+	public String getDisplayName() {
+		return displayName;
+	}
 
-    public void setDriverClassName(String driverClassName) {
-        this.driverClassName = driverClassName;
-    }
+	public String getDriverClassName() {
+		return driverClassName;
+	}
 
-    public void setLoginRequired(boolean loginRequired) {
-        this.loginRequired = loginRequired;
-    }
+	public boolean isLoginRequired() {
+		return loginRequired;
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public void setUser(String user) {
-        this.user = user;
-    }
+	public String getUser() {
+		return user;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setMaxConnections(Integer maxConnections) {
-        this.maxConnections = maxConnections;
-    }
+	public Integer getMaxConnections() {
+		return maxConnections;
+	}
 
-    public void setLoginTimeout(Integer loginTimeout) {
-        this.loginTimeout = loginTimeout;
-    }
+	public Integer getLoginTimeout() {
+		return loginTimeout;
+	}
 
+	public String toString() {
+		if (displayName == null)
+			return "";
+		return displayName;
+	}
 
-    // getters
+	public LocalDataSourceConfig clone() {
+		return new LocalDataSourceConfig(this);
+	}
 
-    public String getDisplayName() {
-        return displayName;
-    }
+	public String debugString() {
+		StringBuffer buffer = new StringBuffer(200);
+		buffer.append(getClass().getName());
+		buffer.append("[");
+		buffer.append("displayName=");
+		buffer.append(displayName);
+		buffer.append(",driverClassName=");
+		buffer.append(driverClassName);
+		buffer.append(",loginRequired=");
+		buffer.append(loginRequired);
+		buffer.append(",url=");
+		buffer.append(url);
+		buffer.append(",user=");
+		buffer.append(user);
+		buffer.append(",password=");
+		buffer.append(password);
+		buffer.append(",maxConnections=");
+		buffer.append(maxConnections);
+		buffer.append(",loginTimeout=");
+		buffer.append(loginTimeout);
 
-    public String getDriverClassName() {
-        return driverClassName;
-    }
-
-    public boolean isLoginRequired() {
-        return loginRequired;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public Integer getMaxConnections() {
-        return maxConnections;
-    }
-
-    public Integer getLoginTimeout() {
-        return loginTimeout;
-    }
-
-
-    public String toString() {
-        if(displayName == null) return "";
-        return displayName;
-    }
-
-    public Object clone() {
-        try {
-            return super.clone();
-        }
-        catch(CloneNotSupportedException ex) {
-            // shouldn't happen because this class is cloneable.
-            throw new java.lang.UnknownError(getClass().getName() + ".clone(): Clone failed, when it shouldn't have!");
-        }
-    }
-
-    public String debugString() {
-        StringBuffer buffer = new StringBuffer(200);
-        buffer.append(getClass().getName());
-        buffer.append("[");
-        buffer.append("displayName=");
-        buffer.append(displayName);
-        buffer.append(",driverClassName=");
-        buffer.append(driverClassName);
-        buffer.append(",loginRequired=");
-        buffer.append(loginRequired);
-        buffer.append(",url=");
-        buffer.append(url);
-        buffer.append(",user=");
-        buffer.append(user);
-        buffer.append(",password=");
-        buffer.append(password);
-        buffer.append(",maxConnections=");
-        buffer.append(maxConnections);
-        buffer.append(",loginTimeout=");
-        buffer.append(loginTimeout);
-    
-        buffer.append("]");
-        return buffer.toString();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
+		buffer.append("]");
+		return buffer.toString();
+	}
 
 }

@@ -67,6 +67,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.DriverConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.glasser.util.ExtensionClassLoader;
@@ -107,7 +108,11 @@ public class DataSourceManager {
 
 		GenericObjectPool genericPool = new GenericObjectPool(null, maxConnections);
 		genericPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_FAIL);
-		// genericPool.setMaxWait(1);
+		genericPool.setMaxWait(1);
+		
+		PoolableConnectionFactory factory = new PoolableConnectionFactory(connFactory, genericPool, null, null, true, true);
+		genericPool.setFactory(factory);
+		
 		PoolingDataSource dataSource = new PoolingDataSource(genericPool);
 		return dataSource;
 	}

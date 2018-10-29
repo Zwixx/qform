@@ -62,19 +62,31 @@
 package org.glasser.qform;
 
 
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import java.util.*;
-import java.io.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import java.sql.*;
-import javax.sql.*;
-import org.glasser.sql.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Iterator;
+
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.glasser.sql.LocalDataSourceConfig;
 import org.glasser.util.comparators.MethodComparator;
-import javax.swing.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 
@@ -102,17 +114,16 @@ public class Config {
     protected final static String TAB3 = TAB + TAB + TAB;
 
 
-    ArrayList localDataSourceConfigs = new ArrayList();
+    ArrayList<LocalDataSourceConfig> localDataSourceConfigs = new ArrayList<>();
 
-    Hashtable thirdPartyLafs = new Hashtable();
+    Hashtable<String, LookAndFeelInfo> thirdPartyLafs = new Hashtable<>();
 
-    public void setLocalDataSourceConfigs(ArrayList localDataSourceConfigs) {
+    public void setLocalDataSourceConfigs(ArrayList<LocalDataSourceConfig> localDataSourceConfigs) {
         this.localDataSourceConfigs = localDataSourceConfigs;
     }
 
     public LocalDataSourceConfig[] getLocalDataSourceConfigs() {
-        return (LocalDataSourceConfig[]) 
-            localDataSourceConfigs.toArray(new LocalDataSourceConfig[localDataSourceConfigs.size()]);
+        return localDataSourceConfigs.toArray(new LocalDataSourceConfig[localDataSourceConfigs.size()]);
     }
 
     public void deleteLocalDataSourceConfig(LocalDataSourceConfig config) {
@@ -135,8 +146,8 @@ public class Config {
     /**
      * Sorts UIManager.LookAndFeelInfo objects by their name fields.
      */
-    private MethodComparator lafComparator =
-        new MethodComparator(UIManager.LookAndFeelInfo.class, "getName", false, false, null, false);
+    private MethodComparator<LookAndFeelInfo> lafComparator =
+        new MethodComparator<LookAndFeelInfo>(UIManager.LookAndFeelInfo.class, "getName", false, false, null, false);
 
     /**
      * Returns all of the third-party LAF's listed in the config file.
@@ -145,8 +156,8 @@ public class Config {
 
         UIManager.LookAndFeelInfo[] lafs = new UIManager.LookAndFeelInfo[thirdPartyLafs.size()];
         int j=0;
-        for(Iterator i = thirdPartyLafs.values().iterator(); i.hasNext(); ) {
-            lafs[j++] = (UIManager.LookAndFeelInfo) i.next();
+        for(Iterator<LookAndFeelInfo> i = thirdPartyLafs.values().iterator(); i.hasNext(); ) {
+            lafs[j++] = i.next();
         }
 
         Arrays.sort(lafs, lafComparator);
@@ -402,27 +413,4 @@ public class Config {
         if(o == null) return "";
         return o.toString().trim();
     }   
-
-
-
-
-    public static void main(String[] args) throws Exception {
-        Config c = new Config(new File("C:/0/qform.xml"));
-        LocalDataSourceConfig[] configs = c.getLocalDataSourceConfigs();
-        for(int j=0; j<configs.length; j++) {
-            System.out.println("----" + configs[j]);
-            DataSource ds = DataSourceManager.getLocalDataSource(configs[j], null, null);
-            for(int k=0; k<7; k++) {
-                Connection conn = ds.getConnection();
-                System.out.println("DONE.");
-//                conn.close();
-            }
-        }
-
-
-
-        c.writeConfig("C:/0/qf2.xml");
-    } 
-    
-
 }

@@ -62,16 +62,46 @@
 package org.glasser.swing;
 
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.event.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.*;
-import java.lang.reflect.*;
-import org.glasser.util.*;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
+import javax.swing.event.ChangeListener;
+
+import org.glasser.qform.ButtonConfig;
+import org.glasser.qform.FormFields;
+import org.glasser.util.Util;
 
 public class GUIHelper {
 
@@ -196,7 +226,7 @@ public class GUIHelper {
      * JLabel to its left. It uses a GridBagLayout to layout the components.
      *
      * @param panel The JPanel to be laid out.
-     * @param fields Each member array in this NxN array is of the form:
+     * @param fields1 Each member array in this NxN array is of the form:
      * <pre>
      * {&lt;JTextField object&gt;, &lt;Label Text String&gt;, [&lt;Tooltip Text String&gt;]}
      * </pre>
@@ -226,7 +256,22 @@ public class GUIHelper {
      * if less than 1, then the component's preferred height will be used.
      */
     public static void buildFormPanel(JPanel panel, 
-                                      Object[][] fields, 
+            Object[][] fields1, 
+            int fieldWidth, 
+            int vgap, 
+            Font labelFont, 
+            Color labelForeground,
+            boolean stretchLastRow, 
+            int lastRowHeight) {
+    	List<FormFields> fields2 = new ArrayList<>();
+    	for(Object[] field : fields1) {
+    		fields2.add(new FormFields(field));
+    	}
+    	buildFormPanel(panel, fields2.toArray(new FormFields[0]), fieldWidth, vgap, labelFont, labelForeground, stretchLastRow, lastRowHeight);
+    }
+    
+    public static void buildFormPanel(JPanel panel, 
+                                      FormFields[] fields, 
                                       int fieldWidth, 
                                       int vgap, 
                                       Font labelFont, 
@@ -271,21 +316,21 @@ public class GUIHelper {
             // cycle, which we don't want, so we'll make sure the labels
             // we instantiate can't get the focus by overriding their
             // isFocusTraversable() method.
-            JLabel label = new JLabel((String) fields[row][1]) {
+            JLabel label = new JLabel(fields[row].label) {
                 public boolean isFocusTraversable() {return false;}
             };
             if(labelFont != null) label.setFont(labelFont);
             if(labelForeground != null) label.setForeground(labelForeground);
             panel.add(label, gc);
             // if a tooltip was supplied, set it for the label
-            if(fields[row].length > 2) label.setToolTipText((String) fields[row][2]);
+            if(fields[row].help != null) label.setToolTipText(fields[row].help);
 
             // now add the textfield
             gc.gridx = 1;
             gc.weightx = 1;
             if(fieldWidth > -1) gc.ipadx = fieldWidth;
             gc.insets = fieldInsets;
-            JComponent field = (JComponent) fields[row][0];
+            JComponent field = fields[row].textField;
 
             // if thie is the last row
             if(row == fields.length - 1) {
@@ -301,7 +346,7 @@ public class GUIHelper {
 //            field.enableInputMethods(false);
             panel.add(field, gc);
             // if a tooltip was supplied, set it for the label
-            if(fields[row].length > 2) field.setToolTipText((String) fields[row][2]);
+            if(fields[row].help != null) field.setToolTipText(fields[row].help);
 
         }
     }
@@ -509,12 +554,12 @@ public class GUIHelper {
      * the given JMenu. It does not recurse through submenus.
      */
     public static JMenuItem[] getMenuItems(JMenu menu) {
-        ArrayList list = new ArrayList();
+        List<JMenuItem> list = new ArrayList<>();
         for(int j=0; j<menu.getItemCount(); j++) {
             JMenuItem mi = menu.getItem(j);
             if(mi != null) list.add(mi);
         }
-        return (JMenuItem[]) list.toArray(new JMenuItem[list.size()]);
+        return list.toArray(new JMenuItem[list.size()]);
     }
 
 
@@ -523,14 +568,14 @@ public class GUIHelper {
      * the given JPopupMenu. It does not recurse through submenus.
      */
     public static JMenuItem[] getMenuItems(JPopupMenu menu) {
-        ArrayList list = new ArrayList();
+        ArrayList<MenuElement> list = new ArrayList<>();
         MenuElement[] elements = menu.getSubElements();
         for(int j=0; j<elements.length; j++) {
             if(elements[j] instanceof JMenuItem) {
                 list.add(elements[j]);
             }
         }
-        return (JMenuItem[]) list.toArray(new JMenuItem[list.size()]);
+        return list.toArray(new JMenuItem[list.size()]);
     }
 
 
@@ -588,13 +633,21 @@ public class GUIHelper {
      *     
      */
     public static void buildButtonPanel(JPanel buttonPanel, Object[][] buttonConfig, ActionListener listener) {
+    	List<ButtonConfig> buttons = new ArrayList<>();
+    	for(Object[] button : buttonConfig) {
+    		buttons.add(new ButtonConfig(button));
+    	}
+    	buildButtonPanel(buttonPanel, buttons.toArray(new ButtonConfig[0]), listener);
+    }
+    
+    public static void buildButtonPanel(JPanel buttonPanel, ButtonConfig[] buttonConfig, ActionListener listener) {
         for(int j=0; j<buttonConfig.length; j++) {
-            JButton button = (JButton) buttonConfig[j][0];
-            if(buttonConfig[j][1] != null) {
-                button.setMnemonic(((String) buttonConfig[j][1]).charAt(0));
+            JButton button = buttonConfig[j].button;
+            if(buttonConfig[j].shortCut != null) {
+                button.setMnemonic((buttonConfig[j].shortCut));
             }
-            button.setActionCommand((String) buttonConfig[j][2]);
-            button.setToolTipText((String) buttonConfig[j][3]);
+            button.setActionCommand(buttonConfig[j].text);
+            button.setToolTipText((String) buttonConfig[j].help);
             if(listener != null) button.addActionListener(listener);
             buttonPanel.add(button);
             enterPressesWhenFocused(button);
@@ -706,8 +759,8 @@ public class GUIHelper {
 	static Method setFocusEnableMethod = null;
 	static Method setFocusTraversalMethod = null;
 
-	static HashSet forwardTraversalKeys = null;
-	static HashSet backwardTraversalKeys = null;
+	static HashSet<KeyStroke> forwardTraversalKeys = null;
+	static HashSet<KeyStroke> backwardTraversalKeys = null;
 
 	static {
 
@@ -724,10 +777,10 @@ public class GUIHelper {
                  System.out.println("BACKWARD_TRAVERSAL_KEYS = " + BACKWARD_TRAVERSAL_KEYS);
             }
 
-			forwardTraversalKeys = new HashSet();
+			forwardTraversalKeys = new HashSet<KeyStroke>();
 			forwardTraversalKeys.add(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_TAB, 0));
 
-			backwardTraversalKeys = new HashSet();
+			backwardTraversalKeys = new HashSet<KeyStroke>();
 			backwardTraversalKeys.add( KeyStroke.getKeyStroke(KeyEvent.VK_TAB,
 														java.awt.event.InputEvent.SHIFT_MASK));
 

@@ -55,7 +55,7 @@ public class ExportedKeyColumnManager extends AbstractColumnManager {
 
     protected final static String[] COLUMN_NAMES = {"Key Seq", "Foreign Column", "Local Column", "Data Type (Local)", "SQL Type (Local)"};
 
-    protected final static Class[] COLUMN_CLASSES = {Integer.class, String.class, String.class, String.class, Integer.class};
+    protected final static Class<?>[] COLUMN_CLASSES = {Integer.class, String.class, String.class, String.class, Integer.class};
 
     public ExportedKeyColumnManager() {
         super();

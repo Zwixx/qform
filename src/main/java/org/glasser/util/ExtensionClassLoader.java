@@ -73,7 +73,7 @@ import java.net.URLStreamHandlerFactory;
  * files in a given directory to the classpath for an instance of this
  * classloader.
  */
-public class ExtensionClassLoader extends java.net.URLClassLoader {
+public class ExtensionClassLoader<T> extends java.net.URLClassLoader {
 
 	public static boolean debug = System.getProperty("ExtensionClassLoader.debug") != null;
 
@@ -82,7 +82,7 @@ public class ExtensionClassLoader extends java.net.URLClassLoader {
 	 * can be created, (the constructors are public) however there is one
 	 * instance that is globally accessible.
 	 */
-	private final static ExtensionClassLoader singleton = new ExtensionClassLoader(new URL[0]);
+	private final static ExtensionClassLoader<Object> singleton = new ExtensionClassLoader<>(new URL[0]);
 
 	static class ArchiveFilter implements java.io.FileFilter {
 
@@ -113,7 +113,7 @@ public class ExtensionClassLoader extends java.net.URLClassLoader {
 	 * instance can be created, (the constructors are public) however there is
 	 * one instance that is globally accessible.
 	 */
-	public static ExtensionClassLoader getSingleton() {
+	public static ExtensionClassLoader<Object> getSingleton() {
 		return singleton;
 	}
 

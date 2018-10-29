@@ -63,11 +63,11 @@ public class WhereClauseDialog extends JDialog implements ActionListener {
 
 	private JButton btnCancel = new JButton("Cancel");
 
-	private Object[][] buttonConfig = {
-			{ btnPrev, "P", "PREVIOUS", "Edit the previous WHERE clause in the history list." },
-			{ btnNext, "N", "NEXT", "Edit the next WHERE clause in the history list." },
-			{ btnSubmit, "S", "SUBMIT", "Submit a query with the given WHERE clause." },
-			{ btnCancel, "C", "CANCEL", "Cancel the query" }
+	private ButtonConfig[] buttonConfig = {
+			new ButtonConfig(btnPrev, 'P', "PREVIOUS", "Edit the previous WHERE clause in the history list."),
+			new ButtonConfig(btnNext, 'N', "NEXT", "Edit the next WHERE clause in the history list."),
+			new ButtonConfig(btnSubmit, 'S', "SUBMIT", "Submit a query with the given WHERE clause."),
+			new ButtonConfig(btnCancel, 'C', "CANCEL", "Cancel the query")
 
 	};
 

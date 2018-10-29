@@ -32,223 +32,217 @@
  */
 package org.glasser.qform;
 
-
-import javax.swing.*;
-import org.glasser.util.Formatter;
-import org.glasser.sql.*;
-import org.glasser.swing.*;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+
+import org.glasser.sql.TableInfo;
+import org.glasser.swing.GUIHelper;
+import org.glasser.util.Formatter;
 
 public class ExportDialog extends JDialog implements ActionListener {
 
+	static class IndexedCheckBox extends JCheckBox {
 
+		public int index = 0;
 
-    static class IndexedCheckBox extends JCheckBox {
+		public IndexedCheckBox(int index) {
+			super();
+			this.index = index;
+		}
+	}
 
-        public int index = 0;
+	JPanel topPanel = new JPanel();
+	JPanel scrollHolder = new JPanel();
+	JPanel buttonPanel = new JPanel();
 
-        public IndexedCheckBox(int index) {
-            super();
-            this.index = index;
-        }
-    }
+	JTextField txtTableName = new JTextField();
+	JTextField txtTerminalChar = new JTextField();
 
-    JPanel topPanel = new JPanel();
-    JPanel scrollHolder = new JPanel();
-    JPanel buttonPanel = new JPanel();
+	JButton btnOk = new JButton("OK");
+	JButton btnCancel = new JButton("Cancel");
 
-    JTextField txtTableName = new JTextField();
-    JTextField txtTerminalChar = new JTextField();
+	FormFields[] formFields = {
+			new FormFields(txtTableName, "Table Name", "Name of the table that will be used in each insert statement."),
+			new FormFields(txtTerminalChar, "Terminal Character(s)", "Optional character(s) that will be appended to the end of each insert statement. (Usually \";\")")
+	};
 
-    JButton btnOk = new JButton("OK");
-    JButton btnCancel = new JButton("Cancel");
+	ButtonConfig[] buttonConfig = { new ButtonConfig(btnOk, 'O', "OK", "Export resultset."),
+			new ButtonConfig(btnCancel, 'C', "CANCEL", "Cancel the export operation.") };
 
-    Object[][] formFields =
-    {
-        {txtTableName, "Table Name", "Name of the table that will be used in each insert statement."}
-        ,{txtTerminalChar, "Terminal Character(s)", "Optional character(s) that will be appended to the end of each insert statement. (Usually \";\")"}
-    };
+	public ExportDialog(Frame parent) {
+		super(parent);
 
-    Object[][] buttonConfig = 
-    {
-         {btnOk,   "O", "OK", "Export resultset."}
-        ,{btnCancel, "C", "CANCEL", "Cancel the export operation."}
-    };
+		panelCaches = new HashMap[2];
+		panelCaches[0] = new HashMap<>();
+		panelCaches[1] = new HashMap<>();
+		
+		JPanel cp = new JPanel();
+		cp.setLayout(new BorderLayout());
 
+		GUIHelper.buildFormPanel(topPanel, formFields, -1, 5, null, Color.black, false, -1);
 
-    public ExportDialog(Frame parent) {
-        super(parent);
+		cp.add(topPanel, BorderLayout.NORTH);
 
-        JPanel cp = new JPanel();
-        cp.setLayout(new BorderLayout());
+		cp.add(scrollHolder, BorderLayout.CENTER);
 
-        GUIHelper.buildFormPanel(topPanel, formFields, -1, 5, null, Color.black, false, -1);
+		buttonPanel.setLayout(new FlowLayout());
+		Border defaultBorder = txtTerminalChar.getBorder();
+		txtTerminalChar.setBorder(new CompoundBorder(defaultBorder, new EmptyBorder(0, 15, 0, 0)));
+		txtTerminalChar.setText(";");
+		txtTerminalChar.setFont(new Font("Dialog", Font.BOLD, 13));
+		topPanel.setBorder(new EmptyBorder(10, 10, 0, 10));
+		scrollHolder.setLayout(new BorderLayout());
+		scrollHolder.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        cp.add(topPanel, BorderLayout.NORTH);
+		for (int j = 0; j < buttonConfig.length; j++) {
+			JButton button = buttonConfig[j].button;
+			button.setMnemonic(buttonConfig[j].shortCut);
+			button.setActionCommand(buttonConfig[j].text);
+			button.setToolTipText(buttonConfig[j].help);
+			button.addActionListener(this);
+			buttonPanel.add(button);
+		}
 
-        cp.add(scrollHolder, BorderLayout.CENTER);
+		// buttonPanel.setBackground(Color.pink);
+		// topPanel.setBackground(Color.pink);
+		// cp.setBackground(Color.blue);
+		cp.add(buttonPanel, BorderLayout.SOUTH);
 
-        buttonPanel.setLayout(new FlowLayout());
-        Border defaultBorder = txtTerminalChar.getBorder();
-        txtTerminalChar.setBorder(new CompoundBorder(defaultBorder, new EmptyBorder(0, 15, 0, 0)));
-        txtTerminalChar.setText(";");
-        txtTerminalChar.setFont(new Font("Dialog", Font.BOLD, 13));
-        topPanel.setBorder(new EmptyBorder(10, 10, 0, 10));
-        scrollHolder.setLayout(new BorderLayout());
-        scrollHolder.setBorder(new EmptyBorder(10, 10, 10, 10));
+		setContentPane(cp);
 
-        for(int j=0; j<buttonConfig.length; j++) {
-            JButton button = (JButton) buttonConfig[j][0];
-            button.setMnemonic(((String) buttonConfig[j][1]).charAt(0));
-            button.setActionCommand((String) buttonConfig[j][2]);
-            button.setToolTipText((String) buttonConfig[j][3]);
-            button.addActionListener(this);
-            buttonPanel.add(button);
-        }
+	}
 
-//        buttonPanel.setBackground(Color.pink);
-//        topPanel.setBackground(Color.pink);
-//        cp.setBackground(Color.blue);
-        cp.add(buttonPanel, BorderLayout.SOUTH);
+	private String[] columnNames = null;
 
-        setContentPane(cp);
+	private Formatter[] formatters = null;
 
+	public String[] getColumnNames() {
+		return columnNames;
+	}
 
+	public Formatter[] getFormatters() {
+		return formatters;
+	}
 
-    }
+	public String getTableName() {
+		if (columnNames == null)
+			return null;
+		return txtTableName.getText();
+	}
 
-    private String[] columnNames = null;
+	public String getTerminal() {
+		if (columnNames == null)
+			return null;
+		return txtTerminalChar.getText();
+	}
 
-    private Formatter[] formatters = null;
+	public void actionPerformed(ActionEvent e) {
+		String command = e.getActionCommand();
+		if (command.equals("OK")) {
+			exportPanel.update();
+			columnNames = exportPanel.getColumnNames();
+			formatters = exportPanel.getFormatters();
+			defaultTerminals[currentExportType] = this.txtTerminalChar.getText();
+			setVisible(false);
+		} else if (command.equals("CANCEL")) {
 
-    public String[] getColumnNames() {
-        return columnNames;
-    }
+			columnNames = null;
+			formatters = null;
+			setVisible(false);
+		}
+	}
 
-    public Formatter[] getFormatters() {
-        return formatters;
-    }
+	ExportPanel exportPanel = null;
 
-    public String getTableName() {
-        if(columnNames == null) return null;
-        return txtTableName.getText();
-    }
+	HashMap cachedPanels = new HashMap();
 
-    public String getTerminal() {
-        if(columnNames == null) return null;
-        return txtTerminalChar.getText();
-    }
+	int currentExportType = EXPORT_INSERT_STATEMENTS;
 
+	public void openDialog(TableInfo ti, int exportType) {
 
-    public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-        if(command.equals("OK")) {
-            exportPanel.update();
-            columnNames = exportPanel.getColumnNames();
-            formatters = exportPanel.getFormatters();
-            defaultTerminals[currentExportType] = this.txtTerminalChar.getText();
-            setVisible(false);
-        }
-        else if(command.equals("CANCEL")) {
+		if (exportType == EXPORT_CSV) {
+			topPanel.setVisible(false);
+		} else {
+			topPanel.setVisible(true);
+		}
 
-            columnNames = null;
-            formatters = null;
-            setVisible(false);
-        }
-    }
+		columnNames = null;
+		formatters = null;
+		currentExportType = exportType;
 
-    ExportPanel exportPanel = null;
+		txtTableName.setText(ti.getQualifiedTableName());
+		exportPanel = getExportPanel(ti, exportType);
 
-    HashMap cachedPanels = new HashMap();
+		scrollHolder.removeAll();
 
-    int currentExportType = EXPORT_INSERT_STATEMENTS;
+		JScrollPane sp = new JScrollPane(exportPanel);
+		scrollHolder.add(sp, BorderLayout.CENTER);
 
-    public void openDialog(TableInfo ti, int exportType) {
+		this.txtTerminalChar.setText(defaultTerminals[exportType]);
 
-        if(exportType == EXPORT_CSV) {
-            topPanel.setVisible(false);
-        }
-        else {
-            topPanel.setVisible(true);
-        }
+		pack();
 
-        columnNames = null;
-        formatters = null;
-        currentExportType = exportType;
+		// don't let the dialog be more than 80% of the screen height
+		Dimension size = this.getSize();
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-        txtTableName.setText(ti.getQualifiedTableName());
-        exportPanel = getExportPanel(ti, exportType);
-        
-        scrollHolder.removeAll();
+		size = (Dimension) size.clone();
+		size.height = Math.min((int) (screenSize.height * .8), size.height);
+		setSize(size);
+		setModal(true);
+		setVisible(true);
+	}
 
-        JScrollPane sp = new JScrollPane(exportPanel);
-        scrollHolder.add(sp, BorderLayout.CENTER);
+	public final static int EXPORT_INSERT_STATEMENTS = 0;
 
-        this.txtTerminalChar.setText(defaultTerminals[exportType]);
+	public final static int EXPORT_CSV = 1;
 
-        pack();
+	HashMap<TableInfo, ExportPanel> panelCaches[];
 
-        // don't let the dialog be more than 80% of the screen height
-        Dimension size = this.getSize();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	String[] defaultTerminals = { ";", "" };
 
-        size = (Dimension) size.clone();
-        size.height = Math.min((int) (screenSize.height * .8), size.height);
-        setSize(size);
-        setModal(true);
-        setVisible(true);
-    }
+	private ExportPanel getExportPanel(TableInfo ti, int exportType) {
 
+		ExportPanel panel = (ExportPanel) panelCaches[exportType].get(ti);
+		if (panel != null)
+			return panel;
+		switch (exportType) {
+		case EXPORT_INSERT_STATEMENTS:
+			panel = new InsertExportPanel(ti);
+			break;
+		case EXPORT_CSV:
+			panel = new CsvExportPanel(ti);
+			break;
+		default: // should never be reached because a NullPointer would already
+					// have been thrown
+			throw new IllegalArgumentException("Invalid export type: " + exportType);
+		}
 
-    public final static int EXPORT_INSERT_STATEMENTS = 0;
+		// explicitly set the sizes
+		Dimension d = panel.getPreferredSize();
+		panel.setMinimumSize((Dimension) d.clone());
+		panel.setPreferredSize((Dimension) d.clone());
 
-    public final static int EXPORT_CSV = 1;
+		panelCaches[exportType].put(ti, panel);
 
-    HashMap[] panelCaches = {new HashMap(), new HashMap()};
-
-    String [] defaultTerminals = {";", ""};
-
-    private ExportPanel getExportPanel(TableInfo ti, int exportType) {
-
-
-        ExportPanel panel = (ExportPanel) panelCaches[exportType].get(ti);
-        if(panel != null) return panel;
-        switch(exportType) {
-            case EXPORT_INSERT_STATEMENTS :
-                panel = new InsertExportPanel(ti);
-                break;
-            case  EXPORT_CSV :
-                panel = new CsvExportPanel(ti);
-                break;
-            default : // should never be reached because a NullPointer would already have been thrown
-                throw new IllegalArgumentException("Invalid export type: " + exportType);
-        }
-
-        // explicitly set the sizes
-        Dimension d = panel.getPreferredSize();
-        panel.setMinimumSize((Dimension) d.clone());
-        panel.setPreferredSize((Dimension) d.clone());
-
-        panelCaches[exportType].put(ti, panel);
-
-        return panel;
-
-    }
-                
-
-
+		return panel;
+	}
 }
-
-
-
-
-
-
-
-
-

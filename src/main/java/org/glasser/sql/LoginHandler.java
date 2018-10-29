@@ -61,10 +61,10 @@
  */
 package org.glasser.sql;
 
+import javax.sql.DataSource;
 
 public interface LoginHandler {
 
-    public Object login(String userName, String password) 
-        throws LoginHandlerException;
+	public DataSource login(String userName, String password) throws LoginHandlerException;
 
 }

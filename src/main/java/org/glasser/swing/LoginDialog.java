@@ -61,261 +61,262 @@
  */
 package org.glasser.swing;
 
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
+import javax.sql.DataSource;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
-import org.glasser.util.*;
-import org.glasser.sql.LoginHandler;
-import org.glasser.sql.LoginHandlerException;
+import javax.swing.text.JTextComponent;
 
+import org.glasser.sql.LoginHandler;
 
 public class LoginDialog extends JDialog implements ActionListener {
 
+	private DataSource loginResult = null;
 
-    private Object loginResult = null;
+	private JTextField txtUserId = new JTextField();
 
-    private JTextField txtUserId = new JTextField();
+	private JPasswordField txtPassword = new JPasswordField();
 
-    private JPasswordField txtPassword = new JPasswordField();
+	private JButton btnSubmit = new JButton("Submit");
 
-    private JButton btnSubmit = new JButton("Submit");
+	private JButton btnCancel = new JButton("Cancel");
 
-    private JButton btnCancel = new JButton("Cancel");
+	private LoginHandler loginHandler = null;
 
-    private LoginHandler loginHandler = null;
+	public DataSource getLoginResult() {
+		return loginResult;
+	}
 
+	public void setLoginHandler(LoginHandler loginHandler) {
+		this.loginHandler = loginHandler;
+	}
 
-    public Object getLoginResult() {
-        return loginResult;
-    }
+	public LoginHandler getLoginHandler() {
+		return loginHandler;
+	}
 
-    public void setLoginHandler(LoginHandler loginHandler) {
-        this.loginHandler = loginHandler;
-    }       
+	public void setUserId(String userID) {
+		this.txtUserId.setText(userID);
+	}
 
-    public LoginHandler getLoginHandler() {
-        return loginHandler;
-    }       
+	public void setPassword(String password) {
+		txtPassword.setText(password);
+	}
 
-    public void setUserId(String userID) {
-        this.txtUserId.setText(userID);
-    }
+	public LoginDialog() {
+		this(null);
+	}
 
-    public void setPassword(String password) {
-        txtPassword.setText(password);
-    }
+	public LoginDialog(Frame parent) {
+		super(parent);
 
-    public LoginDialog() {
-        this(null);
-    }
+		setModal(true);
 
-    public LoginDialog(Frame parent) {
-        super(parent);
+		JPanel panel = new JPanel();
+		panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+		GridBagConstraints gc = new GridBagConstraints();
+		panel.setLayout(new GridBagLayout());
+		JLabel idLbl = new JLabel("User ID:");
+		JLabel pwLbl = new JLabel("Password:");
+		Insets labelInsets = new Insets(0, 0, 0, 0);
+		Insets fieldInsets = new Insets(0, 5, 5, 0);
 
-        setModal(true);
-        
-        JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(10,10,10,10));
-        GridBagConstraints gc = new GridBagConstraints();
-        panel.setLayout(new GridBagLayout());
-        JLabel idLbl = new JLabel("User ID:");
-        JLabel pwLbl = new JLabel("Password:");
-        Insets labelInsets = new Insets(0,0,0,0);
-        Insets fieldInsets = new Insets(0,5,5,0);
+		// add the User ID label
+		gc.anchor = GridBagConstraints.NORTH;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		gc.insets = labelInsets;
+		panel.add(idLbl, gc);
 
-        // add the User ID label
-        gc.anchor = gc.NORTH;
-        gc.fill = gc.HORIZONTAL;
-        gc.insets = labelInsets;
-        panel.add(idLbl, gc);
+		// add the user ID textfield.
+		gc.gridx = 1;
+		gc.weightx = 1;
+		gc.insets = fieldInsets;
+		panel.add(this.txtUserId, gc);
 
-        // add the user ID textfield.
-        gc.gridx = 1;
-        gc.weightx = 1;
-        gc.insets = fieldInsets;
-        panel.add(this.txtUserId, gc);
+		// add the password label
+		gc.gridx = 0;
+		gc.gridy = 1;
+		gc.weightx = 0;
+		gc.insets = labelInsets;
+		panel.add(pwLbl, gc);
 
-        // add the password label
-        gc.gridx = 0;
-        gc.gridy = 1;
-        gc.weightx = 0;
-        gc.insets = labelInsets;
-        panel.add(pwLbl, gc);
+		// now add the password field
+		gc.gridx = 1;
+		gc.weightx = 1;
+		gc.insets = fieldInsets;
+		panel.add(this.txtPassword, gc);
 
-        // now add the password field
-        gc.gridx = 1;
-        gc.weightx = 1;
-        gc.insets = fieldInsets;
-        panel.add(this.txtPassword, gc);
+		// add the button panel
+		JPanel buttonPanel = new JPanel();
+		gc.gridx = 0;
+		gc.gridwidth = 2;
+		gc.gridy = 2;
+		// make this row "stretchable"
+		gc.weighty = 1;
+		gc.ipadx = 20;
+		panel.add(buttonPanel, gc);
 
-        // add the button panel
-        JPanel buttonPanel = new JPanel();
-        gc.gridx = 0;
-        gc.gridwidth = 2;
-        gc.gridy = 2;
-        // make this row "stretchable"
-        gc.weighty = 1;
-        gc.ipadx = 20;
-        panel.add(buttonPanel, gc);
+		// add the buttons to the button panel
+		buttonPanel.setLayout(new FlowLayout());
+		buttonPanel.add(btnSubmit);
+		buttonPanel.add(btnCancel);
 
-        // add the buttons to the button panel
-        buttonPanel.setLayout(new FlowLayout());
-        buttonPanel.add(btnSubmit);
-        buttonPanel.add(btnCancel);
+		btnSubmit.addActionListener(this);
+		btnCancel.addActionListener(this);
 
-        btnSubmit.addActionListener(this);
-        btnCancel.addActionListener(this);
+		GUIHelper.enterPressesWhenFocused(btnSubmit);
+		GUIHelper.enterPressesWhenFocused(btnCancel);
 
-        GUIHelper.enterPressesWhenFocused(btnSubmit);
-        GUIHelper.enterPressesWhenFocused(btnCancel);
+		// instantiate a key listener for the text boxes. This
+		// will be used to make the focus move to their next focusable
+		// component when the enter key is pressed.
+		KeyHandler keyHandler = new KeyHandler();
+		txtUserId.addKeyListener(keyHandler);
+		txtPassword.addKeyListener(keyHandler);
+		setTitle("Login");
 
-        // instantiate a key listener for the text boxes. This
-        // will be used to make the focus move to their next focusable
-        // component when the enter key is pressed.
-        KeyHandler keyHandler = new KeyHandler();
-        txtUserId.addKeyListener(keyHandler);
-        txtPassword.addKeyListener(keyHandler);
-        setTitle("Login");
+		// this WindowListener will place the cursor into the first
+		// blank textfield when the dialog is opened.
+		this.addWindowListener(new WindowAdapter() {
+			/**
+			 * Focus the first blank field when the dialog is opened.
+			 */
+			public void windowOpened(WindowEvent e) {
+				placeCursor();
+			}
 
+			/**
+			 * Focus the first blank field when the dialog is opened.
+			 */
+			public void windowActivated(WindowEvent e) {
+				placeCursor();
+			}
+		});
 
-        // this WindowListener will place the cursor into the first
-        // blank textfield when the dialog is opened.
-        this.addWindowListener(new WindowAdapter() {
-                /**
-                 * Focus the first blank field when the dialog is opened.
-                 */
-                public void windowOpened(WindowEvent e) {
-                    placeCursor();
-                }
+		setContentPane(panel);
+		pack();
 
-                /**
-                 * Focus the first blank field when the dialog is opened.
-                 */
-                public void windowActivated(WindowEvent e) {
-                    placeCursor();
-                }
-            });
+	}
 
-        setContentPane(panel);
-        pack();
+	/**
+	 * This method is called when the dialog is opened. It places the cursor in the
+	 * first blank textbox it finds.
+	 * 
+	 * @return true if a blank field was found and a call to its requestFocus()
+	 *         method was made, false otherwise.
+	 */
+	private boolean placeCursor() {
+		String s = txtUserId.getText();
 
-    }
+		// if the userID field is blank, focus it.
+		if (s == null || s.trim().length() == 0) {
+			txtUserId.requestFocus();
+			return true;
+		} else {
 
-    /**
-     * This method is called when the dialog is opened. It places the
-     * cursor in the first blank textbox it finds.
-     * 
-     * @return true if a blank field was found and a call to its requestFocus()
-     * method was made, false otherwise.
-     */
-    private boolean placeCursor() {
-        String s = txtUserId.getText();
+			// if the password field is blank, focus it.
+			s = null;
+			char[] pw = txtPassword.getPassword();
+			if (pw != null) {
+				s = new String(txtPassword.getPassword());
+			}
+			if (s == null || s.trim().length() == 0) {
+				txtPassword.requestFocus();
+				return true;
+			}
+		}
+		return false;
+	}
 
-        // if the userID field is blank, focus it.
-        if(s == null || s.trim().length() == 0) {
-            txtUserId.requestFocus();
-            return true;
-        }
-        else {
+	public void actionPerformed(ActionEvent e) {
 
-            // if the password field is blank, focus it.
-            s = null;
-            char[] pw = txtPassword.getPassword();
-            if(pw != null) {
-                s = new String( txtPassword.getPassword() );
-            }
-            if(s == null || s.trim().length() == 0) {
-                txtPassword.requestFocus();
-                return true;
-            }
-        }
-        return false;
-    }
+		if (e.getSource() == btnSubmit) {
+			try {
+				if (loginHandler == null) {
+					errMsg("No LoginHandler has been set for this LoginDialog.", "Application Error");
+					return;
+				}
 
+				String userID = this.txtUserId.getText();
+				if (userID != null && userID.trim().length() == 0) {
+					userID = null;
+				}
 
-            
+				char[] pwChars = txtPassword.getPassword();
 
-    public void actionPerformed(ActionEvent e) {
+				String pw = null;
+				if (pwChars != null)
+					pw = new String(pwChars);
 
-        if(e.getSource() == btnSubmit) {
-            try {
-                if(loginHandler == null) {
-                    errMsg("No LoginHandler has been set for this LoginDialog.", "Application Error");
-                    return;
-                }
+				loginResult = loginHandler.login(userID, pw);
 
-                String userID = this.txtUserId.getText();
-                if(userID != null && userID.trim().length() == 0) {
-                    userID = null;
-                }
-                
-                char[] pwChars = txtPassword.getPassword();
+				txtUserId.setText(null);
+				txtPassword.setText(null);
+				setVisible(false);
+			} catch (Exception ex) {
+				errMsg(ex.getMessage(), "Login Error");
+			}
+		} else if (e.getSource() == btnCancel) {
+			setVisible(false);
+		}
+	}
 
-                String pw = null;
-                if(pwChars != null) pw = new String(pwChars); 
+	public void errMsg(String msg, String title) {
+		if (title == null)
+			title = "QueryForm";
+		Toolkit.getDefaultToolkit().beep();
+		JOptionPane.showMessageDialog(null, msg, title, JOptionPane.ERROR_MESSAGE);
+	}
 
-                loginResult = loginHandler.login(userID, pw);
+	/**
+	 * This will select all of the text in the given JTextField object.
+	 */
+	public void selectAll(JTextComponent field) {
 
-                txtUserId.setText(null);
-                txtPassword.setText(null);
-                setVisible(false);
-            }
-            catch(Exception ex) {
-                errMsg(ex.getMessage(), "Login Error");
-            }
-        }
-        else if(e.getSource() == btnCancel) {
-            setVisible(false);
-        }
-    }
- 
+		if (field == null)
+			return;
+		if (field.getText() == null)
+			return;
 
-    public void errMsg(String msg, String title) {
-        if(title == null) title = "QueryForm";
-        Toolkit.getDefaultToolkit().beep();
-        JOptionPane.showMessageDialog(null,
-                                      msg,
-                                      title,
-                                      JOptionPane.ERROR_MESSAGE);
-    }
+		field.setSelectionStart(0);
+		field.setSelectionEnd(field.getText().length());
+		field.requestFocus();
 
-    /**
-     * This will select all of the text in the given JTextField object. 
-     */
-    public void selectAll(JTextComponent field) {
+	}
 
-        if(field == null) return;
-        if(field.getText() == null) return;
+	class KeyHandler extends KeyAdapter {
 
-        field.setSelectionStart(0);
-        field.setSelectionEnd(field.getText().length());
-        field.requestFocus();
-
-    }
-
-
-    class KeyHandler extends KeyAdapter {
-
-        public void keyReleased(KeyEvent e) {
-            if(e.getKeyCode() == e.VK_ENTER)  {
-                if(e.getSource() == txtUserId) {
-                    selectAll(txtPassword);
-                }
-                else if(e.getSource() == txtPassword) {
-                    btnSubmit.doClick();
-                }
-            }
-            else if(e.getKeyCode() == e.VK_ESCAPE) {
-                txtUserId.setText(null);
-                txtPassword.setText(null);
-                setVisible(false);
-            }
-        }
-    }
-
+		public void keyReleased(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				if (e.getSource() == txtUserId) {
+					selectAll(txtPassword);
+				} else if (e.getSource() == txtPassword) {
+					btnSubmit.doClick();
+				}
+			} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+				txtUserId.setText(null);
+				txtPassword.setText(null);
+				setVisible(false);
+			}
+		}
+	}
 
 }

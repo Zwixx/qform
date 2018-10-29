@@ -63,8 +63,7 @@ package org.glasser.sql;
 
 
 
-import java.sql.*;
-import org.glasser.swing.*;
+import javax.sql.DataSource;
 
 
 
@@ -73,7 +72,7 @@ public class LocalDataSourceLoginHandler implements LoginHandler {
 
     private LocalDataSourceConfig config = null;
 
-    public Object login(String userName, String password) throws LoginHandlerException {
+    public DataSource login(String userName, String password) throws LoginHandlerException {
 
         LocalDataSourceConfig temp = config;
         if(temp == null) throw new RuntimeException("No local datasource configuration has been provided.");
