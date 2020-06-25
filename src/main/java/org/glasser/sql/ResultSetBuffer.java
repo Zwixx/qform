@@ -73,11 +73,10 @@ public class ResultSetBuffer extends Vector {
 	private int readAhead = DEFAULT_READAHEAD;
 	private int columnCount = 0;
 	private ResultSet resultSet = null;
-	private Connection conn = null;
 	private boolean endOfResultsReached = false;
 	private SmartEventListenerList listeners = new SmartEventListenerList();
 	private String[] columnNames = null;
-	private Class[] columnClasses = null;
+	private Class<?>[] columnClasses = null;
 	private int[] columnTypes = null;
 	private String[] nonDisplayableColumnStrings = null;
 	private int cursor = -1;

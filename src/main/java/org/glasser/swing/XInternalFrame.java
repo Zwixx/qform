@@ -72,9 +72,9 @@ public class XInternalFrame extends JInternalFrame implements ActionListener {
 
     private final JMenuItem menuItem = new JMenuItem();
 
-    private ImageIcon selectedIcon = null;
+    private Icon selectedIcon = null;
 
-    private ImageIcon deselectedIcon = null;
+    private Icon deselectedIcon = null;
 
     public static boolean debug = System.getProperty("XInternalFrame.debug") != null
         || System.getProperty("DEBUG") != null;

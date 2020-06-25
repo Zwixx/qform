@@ -43,6 +43,7 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.Action;
@@ -128,9 +129,9 @@ public class TableSelector extends JDialog implements ActionListener {
 
 	JButton btnCancel = new JButton("Cancel");
 
-	HashMap<Integer, DefaultComboBoxModel<String>> schemaModelMap = new HashMap<>();
+	Map<Integer, DefaultComboBoxModel<String>> schemaModelMap = new HashMap<>();
 
-	HashMap<Integer, HashMap<String, Vector<TableInfo>>> tableListMap = new HashMap<>();
+	HashMap<Integer, Map<String, Vector<TableInfo>>> tableListMap = new HashMap<>();
 
 	private Object[] selections = null;
 
@@ -138,7 +139,7 @@ public class TableSelector extends JDialog implements ActionListener {
 
 	private Integer selectedSourceId = null;
 
-	public void addDataSource(Integer sourceId, String sourceName, HashMap<String, Vector<TableInfo>> tables) {
+	public void addDataSource(Integer sourceId, String sourceName, Map<String, Vector<TableInfo>> tables) {
 
 		DataSourceListItem item = new DataSourceListItem(sourceId, sourceName);
 		sourceVector.add(item);
@@ -326,7 +327,7 @@ public class TableSelector extends JDialog implements ActionListener {
 				return; // all lists are empty.
 			Integer sourceId = sourceItem.getSourceId();
 			String owner = schemaList.getSelectedItem().toString();
-			HashMap<String, Vector<TableInfo>> schemaTables = tableListMap.get(sourceId);
+			Map<String, Vector<TableInfo>> schemaTables = tableListMap.get(sourceId);
 
 			if (owner != null) {
 				Vector<TableInfo> v = schemaTables.get(owner);

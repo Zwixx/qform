@@ -124,34 +124,30 @@ public abstract class ExportPanel extends JPanel implements ActionListener {
 			// this ActionListener will make the combo box editable whenever
 			// the user selects the first (blank line) item, and non-editable
 			// when one of the Formatter objects are selected from the list.
-			cmb.addActionListener(new ActionListener() {
-
+			cmb.addActionListener(e -> {
 				// this gets called when the user changes the selection on
 				// the combo box.
-				public void actionPerformed(ActionEvent e) {
+				JComboBox combo = (JComboBox) e.getSource();
+				int selectedIndex = combo.getSelectedIndex();
+				Object o = combo.getSelectedItem();
 
-					JComboBox combo = (JComboBox) e.getSource();
-					int selectedIndex = combo.getSelectedIndex();
-					Object o = combo.getSelectedItem();
+				System.out.println("--ActionEvent:" + selectedIndex + "/" + o);
 
-					System.out.println("--ActionEvent:" + selectedIndex + "/" + o);
+				if (selectedIndex < 0) {
+					return;
+				}
+				if (selectedIndex == 0) {
+					combo.setEditable(true);
+					combo.requestFocus();
+				} else {
+					combo.setEditable(false);
 
-					if (selectedIndex < 0) {
-						return;
-					}
-					if (selectedIndex == 0) {
-						combo.setEditable(true);
-						combo.requestFocus();
-					} else {
-						combo.setEditable(false);
-
-						// this works around an apparent swing bug where the
-						// selected
-						// index seems to get changed by the call to
-						// setEditable(false).
-						if (o != null)
-							combo.setSelectedItem(o);
-					}
+					// this works around an apparent swing bug where the
+					// selected
+					// index seems to get changed by the call to
+					// setEditable(false).
+					if (o != null)
+						combo.setSelectedItem(o);
 				}
 			});
 			cmb.setEnabled(cb.isSelected());

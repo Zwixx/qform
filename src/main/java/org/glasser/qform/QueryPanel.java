@@ -191,16 +191,16 @@ public class QueryPanel extends JPanel implements ResultSetBufferListener, Actio
 	};
 
 	Object[][] toolBarConfig = { { newQueryButton, "OPEN_FOR_QUERY", "DataQuery2_20.png", "New query. (Ctrl-Q)" },
-			{ whereClauseButton, "WHERE_CLAUSE_QUERY", "SQLWizard32.gif", "Query with custom WHERE clause. (Ctrl-W)" },
+			{ whereClauseButton, "WHERE_CLAUSE_QUERY", "SQLWizard32.svg", "Query with custom WHERE clause. (Ctrl-W)" },
 			{ addRowButton, "ADD_RECORD", "NewRow20.gif", "Add a row to the current table. (Ctrl-A)" },
 			{ updateRowButton, "MODIFY_RECORD", "UpdateRow20.png", "Modify current row. (Ctrl-M)" },
 			{ deleteRowButton, "DELETE_RECORD", "DeleteRow20.png", "Delete the current row. (Del)", "1" },
-			{ leftEndButton, "GOTO_FIRST", "VCRBegin20.png", "Move to first record. (Home)" },
-			{ leftButton, "GOTO_PREVIOUS", "VCRBack20.png", "Move to previous record." },
-			{ rightButton, "GOTO_NEXT", "VCRForward20.png", "Move to next record.", "1" },
-			{ executeButton, "EXECUTE_ACTION", "ExecuteProject20.gif", "Execute operation (Ctrl-Enter)" },
-			{ refreshButton, "REFRESH", "Redo20.png", "Re-execute the current query. (Ctrl-R)" },
-			{ cancelButton, "CANCEL_ACTION", "Stop20.png", "Cancel operation (ESC)", "1" },
+			{ leftEndButton, "GOTO_FIRST", "VCRBegin20.svg", "Move to first record. (Home)" },
+			{ leftButton, "GOTO_PREVIOUS", "VCRBack20.svg", "Move to previous record." },
+			{ rightButton, "GOTO_NEXT", "VCRForward20.svg", "Move to next record.", "1" },
+			{ executeButton, "EXECUTE_ACTION", "ExecuteProject20.svg", "Execute operation (Ctrl-Enter)" },
+			{ refreshButton, "REFRESH", "Redo20.svg", "Re-execute the current query. (Ctrl-R)" },
+			{ cancelButton, "CANCEL_ACTION", "Stop20.svg", "Cancel operation (ESC)", "1" },
 			{ popupButton, "SHOW_POPUP", null, "More options...", "1" }
 
 	};

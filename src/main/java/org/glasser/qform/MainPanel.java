@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Properties;
@@ -107,14 +108,13 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	static JButton tbMetaData = new JButton();
 
 	static Object[][] toolBarConfig = {
-			{ tbNew, "DATA_SOURCE_DIALOG", "DataConnection20.png", "Create, modify or connect to a data source.", "1" },
-			{ newFormButton, "NEW_QUERY_FORM", "New20.gif", "Select a table to query." },
-			{ tbMetaData, "TABLE_METADATA", "BCard20.png", "Select a table to view its metadata." }
+			{ tbNew, "DATA_SOURCE_DIALOG", "DataConnection20.svg", "Create, modify or connect to a data source.", "1" },
+			{ newFormButton, "NEW_QUERY_FORM", "New20.svg", "Select a table to query." },
+			{ tbMetaData, "TABLE_METADATA", "BCard20.svg", "Select a table to view its metadata." }
 
 	};
 
-	private boolean[][] toolBarStates = { { true, false, false, } // NO_CONNECTIONS
-																	// = 0;
+	private boolean[][] toolBarStates = { { true, false, false, } // NO_CONNECTIONS = 0;
 			, { true, true, true, } // HAS_CONNECTIONS = 1;
 			, { true, true, true, } // ALL_FRAMES_ICONIFIED = 2;
 			, { true, true, true, } // QUERY_PANEL_NO_RESULTSET = 3;
@@ -135,9 +135,7 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	static String[][] connectMenuConfig_ = { { "DATA_SOURCE_DIALOG" }, { "TABLE_METADATA" }, { "CLOSE_WINDOW" },
 			{ "EXIT" } };
 
-	private boolean[][] connectMenuStates = { { true, false, false, true } // NO_CONNECTIONS
-																			// =
-																			// 0;
+	private boolean[][] connectMenuStates = { { true, false, false, true } // NO_CONNECTIONS = 0;
 			, { true, true, false, true } // HAS_CONNECTIONS = 1;
 			, { true, true, false, true } // ALL_FRAMES_ICONIFIED = 2;
 			, { true, true, true, true } // QUERY_PANEL_NO_RESULTSET = 3;
@@ -277,33 +275,15 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	private boolean[][] queryformMenuStates = {
 			// New WinTitle Query WHERE Add Mod Del Clone Grid Export Exec
 			// Cancel
-			{ false, false, false, false, false, false, false, false, false, false, false, false } // NO_CONNECTIONS
-																									// =
-																									// 0;
-			, { true, false, false, false, false, false, false, false, false, false, false, false } // HAS_CONNECTIONS
-																									// =
-																									// 1;
-			, { true, false, false, false, false, false, false, false, false, false, false, false } // ALL_FRAMES_ICONIFIED
-																									// =
-																									// 2;
-			, { true, true, true, true, true, false, false, false, true, false, false, false } // QUERY_PANEL_NO_RESULTSET
-																								// =
-																								// 3;
-			, { true, true, true, true, true, true, true, true, true, true, false, false } // QUERY_PANEL_RESULTSET
-																							// =
-																							// 4;
-			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_ADD
-																									// =
-																									// 5;
-			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_UPDATE
-																									// =
-																									// 6;
-			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_QUERY
-																									// =
-																									// 7;
-			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_CLONE
-																									// =
-																									// 8;
+			{ false, false, false, false, false, false, false, false, false, false, false, false } // NO_CONNECTIONS = 0;
+			, { true, false, false, false, false, false, false, false, false, false, false, false } // HAS_CONNECTIONS = 1;
+			, { true, false, false, false, false, false, false, false, false, false, false, false } // ALL_FRAMES_ICONIFIED = 2;
+			, { true, true, true, true, true, false, false, false, true, false, false, false } // QUERY_PANEL_NO_RESULTSET = 3;
+			, { true, true, true, true, true, true, true, true, true, true, false, false } // QUERY_PANEL_RESULTSET = 4;
+			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_ADD = 5;
+			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_UPDATE = 6;
+			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_QUERY = 7;
+			, { true, false, false, false, false, false, false, false, false, false, true, true } // QUERY_PANEL_OPEN_FOR_CLONE = 8;
 			, { true, false, false, false, false, false, false, false, false, false, false, false } // TABLE_INFO_PANEL
 	};
 
@@ -325,20 +305,15 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	static Object[][] windowMenuConfig_ = { { "MINIMIZE_ALL" }, { "MAXIMIZE_ALL" }, { "RESTORE_ALL" }, { "CASCADE" },
 			{ "SEPARATOR" }, { "LOOK_AND_FEEL", lafSubConfig_ }, { "SEPARATOR" } };
 
-	private boolean[][] windowMenuStates = { { false, false, false, false, true } // NO_CONNECTIONS
-																					// =
-																					// 0;
+	private boolean[][] windowMenuStates = { { false, false, false, false, true } // NO_CONNECTIONS = 0;
 			, { false, false, false, false, true } // HAS_CONNECTIONS = 1;
 			, { false, true, true, true, true } // ALL_FRAMES_ICONIFIED = 2;
 			, { true, true, true, true, true } // QUERY_PANEL_NO_RESULTSET = 3;
 			, { true, true, true, true, true } // QUERY_PANEL_RESULTSET = 4;
 			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_ADD = 5;
-			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_UPDATE =
-												// 6;
-			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_QUERY =
-												// 7;
-			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_CLONE =
-												// 8;
+			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_UPDATE = 6;
+			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_QUERY = 7;
+			, { true, true, true, true, true } // QUERY_PANEL_OPEN_FOR_CLONE = 8;
 			, { true, true, true, true, true } // TABLE_INFO_PANEL
 	};
 
@@ -367,15 +342,15 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	JMenu helpMenu = new JMenu("Help");
 
 	JMenu lafMenu = null;
-	
+
 	Object[][] menus = { { connectMenu, convert(connectMenuConfig_, "CONNECT"), "C", connectMenuStates },
 			{ queryformMenu, convert(queryformMenuConfig_, "QUERY_FORM"), "Q", queryformMenuStates },
 			{ windowMenu, convert(windowMenuConfig_, "WINDOW"), "W", windowMenuStates },
 			{ helpMenu, convert(helpMenuConfig_, "HELP"), "H", helpMenuStates } };
 
 	/**
-	 * These are the messages that are displayed on the statusbar for each
-	 * screen state. The index of each message corresponds to a state number.
+	 * These are the messages that are displayed on the statusbar for each screen
+	 * state. The index of each message corresponds to a state number.
 	 */
 	private final static String[] STATE_MESSAGES = {
 			"Select \"Data Source...\" from the Connect menu to configure or open a connection. ", null, null, null,
@@ -433,8 +408,8 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 			}
 			this.parent.addWindowListener(new WindowAdapter() {
 				/**
-				 * Invoked when a window is in the process of being closed. The
-				 * close operation can be overridden at this point.
+				 * Invoked when a window is in the process of being closed. The close operation
+				 * can be overridden at this point.
 				 */
 				public void windowClosing(WindowEvent e) {
 					maybeExitProgram();
@@ -576,9 +551,9 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	private HashMap lafMenuItems = new HashMap();
 
 	/**
-	 * Adds a JRadioButtonMenuItem for a LookAndFeel to the LookAndFeel submenu.
-	 * If an item already exists for it, the item text is updated to match
-	 * lafName. This is helpful if the LAF was entered into qform.xml manually.
+	 * Adds a JRadioButtonMenuItem for a LookAndFeel to the LookAndFeel submenu. If
+	 * an item already exists for it, the item text is updated to match lafName.
+	 * This is helpful if the LAF was entered into qform.xml manually.
 	 */
 	private void addOrUpdateLafMenuItem(String lafName, String lafClassName) {
 
@@ -633,9 +608,9 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 						// re-select the current LAF's menu item.
 						selectCurrentLafMenuItem();
 
-						int reply = JOptionPane.showConfirmDialog(parent,
-								"The look-and-feel you selected (" + menuItem.getText()
-										+ ") is not supported on this platform.\n\nDo you want to remove this look-and-feel from QueryForm's configuration file?",
+						int reply = JOptionPane.showConfirmDialog(parent, "The look-and-feel you selected ("
+								+ menuItem.getText()
+								+ ") is not supported on this platform.\n\nDo you want to remove this look-and-feel from QueryForm's configuration file?",
 								"Application Error", JOptionPane.YES_NO_OPTION);
 						if (reply == JOptionPane.YES_OPTION) {
 
@@ -653,9 +628,9 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 					// re-select the current LAF's menu item.
 					selectCurrentLafMenuItem();
 
-					int reply = JOptionPane.showConfirmDialog(parent,
-							"The look-and-feel you selected (" + menuItem.getText()
-									+ ") was not found in QueryForm's classpath.\n\nDo you want to remove this look-and-feel from QueryForm's configuration file?",
+					int reply = JOptionPane.showConfirmDialog(parent, "The look-and-feel you selected ("
+							+ menuItem.getText()
+							+ ") was not found in QueryForm's classpath.\n\nDo you want to remove this look-and-feel from QueryForm's configuration file?",
 							"Application Error", JOptionPane.YES_NO_OPTION);
 					if (reply == JOptionPane.YES_OPTION) {
 
@@ -677,10 +652,9 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	};
 
 	/**
-	 * Sets the application's LookAndFeel to the default (Metal) LookAndFeel. If
-	 * the operation fails, the program exits. This method should only be called
-	 * when/if a call to UIManager.setLookAndFeel() fails for some other
-	 * LookAndFeel.
+	 * Sets the application's LookAndFeel to the default (Metal) LookAndFeel. If the
+	 * operation fails, the program exits. This method should only be called when/if
+	 * a call to UIManager.setLookAndFeel() fails for some other LookAndFeel.
 	 */
 	private void restoreDefaultLaf() {
 		try {
@@ -697,9 +671,9 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	}
 
 	/**
-	 * Selects the menu item for the app's current LookAndFeel. Does nothing if
-	 * the menu item is not found in the menu, or if the current LookAndFeel
-	 * cannot be determined.
+	 * Selects the menu item for the app's current LookAndFeel. Does nothing if the
+	 * menu item is not found in the menu, or if the current LookAndFeel cannot be
+	 * determined.
 	 */
 	private void selectCurrentLafMenuItem() {
 		LookAndFeel currentLAF = UIManager.getLookAndFeel();
@@ -718,11 +692,10 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	}
 
 	/**
-	 * This method is called when UIManager.setLookAndFeel() throws a Throwable.
-	 * It displays an error message to the user and attempts to set the app's
-	 * look and feel to the default (Metal). If the default LookAndFeel can't be
-	 * restored, the program exits, on the assumption that is is irretrievably
-	 * hosed.
+	 * This method is called when UIManager.setLookAndFeel() throws a Throwable. It
+	 * displays an error message to the user and attempts to set the app's look and
+	 * feel to the default (Metal). If the default LookAndFeel can't be restored,
+	 * the program exits, on the assumption that is is irretrievably hosed.
 	 */
 	private void handleSevereLafError(Throwable err) {
 
@@ -744,8 +717,8 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	/**
 	 * Sets the LookAndFeel for the app to the given LookAndFeel.
 	 * 
-	 * @throws UnsupportedLookAndFeelException
-	 *             if the given LookAndFeel is not suuported.
+	 * @throws UnsupportedLookAndFeelException if the given LookAndFeel is not
+	 *                                         suuported.
 	 */
 	private void setLookAndFeel(LookAndFeel laf) throws UnsupportedLookAndFeelException {
 		UIManager.setLookAndFeel(laf);
@@ -846,17 +819,17 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 
 	private int nextDataSourceId = 1;
 
-	private HashMap<Integer, DataSource> dsMap = new HashMap<>();
+	private Map<Integer, DataSource> dsMap = new HashMap<>();
 
-	private HashMap localConfigMap = new HashMap();
+	private Map localConfigMap = new HashMap<>();
 
-	private HashSet pkeysNotSupported = new HashSet();
+	private Set pkeysNotSupported = new HashSet<>();
 
-	private HashSet fkeysNotSupported = new HashSet();
+	private Set fkeysNotSupported = new HashSet<>();
 
-	private HashSet exkeysNotSupported = new HashSet();
+	private Set exkeysNotSupported = new HashSet<>();
 
-	private HashSet establishedConnections = new HashSet();
+	private Set establishedConnections = new HashSet<>();
 
 	private Properties editableTypes = new Properties();
 
@@ -937,7 +910,7 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 			command = "";
 		if (command.equals("DATA_SOURCE_DIALOG")) {
 			setStatusMessage(tooltip);
-			Vector configs = new Vector(Arrays.asList(config.getLocalDataSourceConfigs()));
+			Vector<LocalDataSourceConfig> configs = new Vector<>(Arrays.asList(config.getLocalDataSourceConfigs()));
 			this.configDialog.setList(configs);
 			configDialog.setVisible(true);
 			LocalDataSourceConfig ld = configDialog.getSelectedItem();
@@ -1531,10 +1504,10 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 			Arrays.sort(tis, tableTypeComparator);
 
 			rs.close();
-			HashMap map = DBUtil.getTableInfoLists(tis, DEFAULT_SCHEMA);
-			this.tableSelector.addDataSource(id, config.getDisplayName(), map);
-			this.dsMap.put(id, ds);
-			this.localConfigMap.put(id, config.clone());
+			Map<String, Vector<TableInfo>> map = DBUtil.getTableInfoLists(tis, DEFAULT_SCHEMA);
+			tableSelector.addDataSource(id, config.getDisplayName(), map);
+			dsMap.put(id, ds);
+			localConfigMap.put(id, new LocalDataSourceConfig(config));
 			setStatusMessage("Connected to " + config.getDisplayName() + ".");
 
 			// put the original (uncloned) config in a set se we'll know we're
@@ -1665,8 +1638,8 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	}
 
 	/**
-	 * Invoked when an internal frame is activated. This is an empty
-	 * implementation which can be overriden by subclasses.
+	 * Invoked when an internal frame is activated. This is an empty implementation
+	 * which can be overriden by subclasses.
 	 * 
 	 * @see javax.swing.JInternalFrame#setSelected
 	 */
@@ -1678,9 +1651,9 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	}
 
 	/**
-	 * Invoked when an internal frame is in the process of being closed. The
-	 * close operation can be overridden at this point. This is an empty
-	 * implementation which can be overriden by subclasses.
+	 * Invoked when an internal frame is in the process of being closed. The close
+	 * operation can be overridden at this point. This is an empty implementation
+	 * which can be overriden by subclasses.
 	 * 
 	 * @see javax.swing.JInternalFrame#setDefaultCloseOperation
 	 */
@@ -1731,8 +1704,8 @@ public class MainPanel extends MDIPanel implements ActionListener, InternalFrame
 	}
 
 	/**
-	 * Invoked when an internal frame is iconified. This is an empty
-	 * implementation which can be overriden by subclasses.
+	 * Invoked when an internal frame is iconified. This is an empty implementation
+	 * which can be overriden by subclasses.
 	 * 
 	 * @see javax.swing.JInternalFrame#setIcon
 	 */
