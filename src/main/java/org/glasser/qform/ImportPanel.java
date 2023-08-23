@@ -114,7 +114,7 @@ public class ImportPanel extends JFrame {
 	}
 
 	private void SaveData() {
-		Connection connect = ;
+		Connection connect = null;
 		try {
 
 			String sql = "INSERT INTO " + tableInfo.getTableName() + " (";
